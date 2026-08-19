@@ -208,7 +208,7 @@ def extrair_produto_linha(texto):
     if re.match(r"^[A-ZÀ-Ú][A-ZÀ-Ú\s\d.,'&/-]{3,}$", texto):
         return texto
 
-    #produtos com mistura de caixa
+    #produtos com mistura de caixa (comeca com maiuscula)
     m = re.search(
         r"([A-ZÀ-Ú][a-zà-ú]+(?:\s+(?:de|do|da|e|ou|com)\s+)?[A-ZÀ-Ú][a-zA-Zà-ú]+(?:\s+[a-zA-Zà-ú]+){0,3})",
         texto,
@@ -218,6 +218,13 @@ def extrair_produto_linha(texto):
 
     #produtos comeca com maiuscula
     if re.match(r"^[A-ZÀ-Ú][a-zà-ú]+", texto) and len(texto) > 4:
+        return texto
+
+    #produtos comeca com minuscula (ex: "azeite de oliva", "leite condensado")
+    if re.match(r"^[a-zà-ú]", texto) and len(texto) > 4:
+        texto_limpo = re.sub(r"\s*\d[\d.,\s]*$", "", texto).strip()
+        if len(texto_limpo) > 4:
+            return texto_limpo
         return texto
 
     return None
@@ -352,6 +359,28 @@ def parear_produtos_precos(itens):
             if zona in ("produto", "desconhecida"):
                 produtos.append({"nome": nome, "y": item["y"], "x": item["x"]})
 
+    # agrupar linhas proximas na mesma coluna (subtexto de produto)
+    # se linhas estao a <35px em Y e <80px em X, sao parte do mesmo produto
+    produtos_agrupados = []
+    usados = set()
+    produtos.sort(key=lambda p: (p["x"], p["y"]))
+    for i, prod in enumerate(produtos):
+        if i in usados:
+            continue
+        # este e o "titulo" do produto (primeira linha da coluna)
+        grupo = [prod]
+        for j, outro in enumerate(produtos):
+            if j <= i or j in usados:
+                continue
+            dy = abs(prod["y"] - outro["y"])
+            dx = abs(prod["x"] - outro["x"])
+            if dy < 35 and dx < 80:
+                grupo.append(outro)
+                usados.add(j)
+        # usar a primeira linha como nome do produto
+        produtos_agrupados.append(grupo[0])
+    produtos = produtos_agrupados
+
     if not produtos or not precos_todos:
         return [{"nome": p["nome"], "preco": None, "preco_clube": None} for p in produtos]
 
@@ -480,7 +509,7 @@ def main():
     print(f"Encontradas {len(arquivos)} imagens em '{PASTA_IMGS}/'")
     print("Carregando EasyOCR...\n")
 
-    reader = easyocr.Reader(["pt", "en"], gpu=False)
+    reader = easyocr.Reader(['pt', 'en'], gpu=True) 
 
     #limpar banco antigo
     if os.path.exists(BANCO_DADOS):
