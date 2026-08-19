@@ -25,10 +25,13 @@ def detectar_zonas(itens):
     for item in itens:
         t = item["texto"]
         y = item["y"]
+        # detectar precos: "17,99" / "18 99" / "Rs15,99"
         tem_preco = bool(re.search(r"\d+[.,]\d{2}", t))
-        if tem_preco and y > 250:
+        tem_preco_espaco = bool(re.search(r"\d{1,3}\s+\d{2}\b", t))
+        tem_rs = bool(re.search(r"(?:Rs?|R\$)\s*\d", t, re.IGNORECASE))
+        if (tem_preco or tem_preco_espaco or tem_rs) and y > 250:
             y_precos.append(y)
-        elif not tem_preco and item["conf"] > 0.2 and re.search(r"[a-zA-ZÀ-ú]{3,}", t):
+        elif not tem_preco and not tem_preco_espaco and item["conf"] > 0.2 and re.search(r"[a-zA-ZÀ-ú]{3,}", t):
             y_produtos.append(y)
 
     if y_precos:
@@ -83,18 +86,22 @@ def ler_imagem_detalhado(reader, caminho):
     for item in itens:
         y = item["y"]
         t = item["texto"]
+        # detectar qualquer tipo de preco
         tem_preco = bool(re.search(r"\d+[.,]\d{2}", t))
+        tem_preco_espaco = bool(re.search(r"\d{1,3}\s+\d{2}\b", t))
+        tem_rs = bool(re.search(r"(?:Rs?|R\$)\s*\d", t, re.IGNORECASE))
+        eh_preco = tem_preco or tem_preco_espaco or tem_rs
 
         if y < zonas["banner_max"]:
             item["zona"] = "banner"
-        elif y < zonas["produto_max"] and not tem_preco:
+        elif y < zonas["produto_max"] and not eh_preco:
             item["zona"] = "produto"
-        elif tem_preco and y >= zonas["preco_min"]:
+        elif eh_preco and y >= zonas["preco_min"]:
             item["zona"] = "preco"
-        elif tem_preco and y < zonas["preco_min"]:
-            item["zona"] = "preco_outras"  # preco fora da zona normal
+        elif eh_preco and y < zonas["preco_min"]:
+            item["zona"] = "preco_outras"
         else:
-            item["zona"] = "imagem"  # texto de embalagem, ignorar
+            item["zona"] = "imagem"
 
     return itens
 
@@ -111,7 +118,12 @@ def eh_produto_valido(texto):
         r"(TEM|OFERTAS?|CASHBACK|PREZUNIC)$",
         r"^\d+[.,]?\d*\s*(Rs?|R\$)?\s*\d",    # mistura de numeros
         r"^[A-Z]{1,3}\s+[A-Z]{1,3}$",          # siglas curtas
-        r"Coffon|FOLHAIiclA|Lsiil|Ghgupr|Veycllje|LaticiiO",
+        r"Cotton|Coffon|FOLHAIiclA|Lsiil|Ghgupr|Veycllje|LaticiiO",
+        # banners promocionais
+        r"(GANHE|PARCELE|APROVEITE|PAGUE|LEVE|COMPRE|RECEBA|TROQUE)",
+        r"(CASHBACK|CASHBACKO|CREDito|DESCONTO|BONUS)",
+        r"^(DE|OU|EM|ATE|COM)\s",
+        r"(NOVA|COMPRAS?|EXPERIENCIA|OFERTA)",
     ]
     for p in padroes_lixo:
         if re.search(p, texto, re.IGNORECASE):
