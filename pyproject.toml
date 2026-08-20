@@ -1,0 +1,24 @@
+[project]
+name = "encartes-history"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Richard Kevin", email = "richardkevin@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "pydantic>=2.0",
+    "google-genai>=1.0",
+    "pillow>=10.0",
+    "easyocr>=1.7",
+    "opencv-python-headless>=5.0",
+    "playwright>=1.40",
+]
+
+[project.scripts]
+encartes-history = "encartes_history:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"

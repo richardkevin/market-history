@@ -1,1 +1,9 @@
 *.db
+debug_*.png
+.DS_Store
+__pycache__/
+*.pyc
+.produtos_extraidos*.json
+fotos_prezunic/
+encartes_prezunic/
+.venv/

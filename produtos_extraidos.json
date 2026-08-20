@@ -4,1280 +4,2207 @@
     "produto": "Vodka smirnoff red",
     "preco": 59.9,
     "preco_clube": 54.9,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "652307803_1352126350287060_6637227223399174306_n.jpg",
-    "produto": "Cerveja Brahma Chopp",
+    "produto": "a7sml",
     "preco": 55.1,
     "preco_clube": 50.28,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
-    "imagem": "653405018_1351380553694973_5775121707782265307_n.jpg",
-    "produto": "nneline",
-    "preco": 7.29,
-    "preco_clube": 6.6899999999999995,
-    "data_encarte": null
+    "imagem": "652307803_1352126350287060_6637227223399174306_n.jpg",
+    "produto": "Cerveja Brahma Chopp 473ml",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "653405018_1351380553694973_5775121707782265307_n.jpg",
     "produto": "cervejaheineken",
-    "preco": 22.99,
+    "preco": 7.29,
+    "preco_clube": 6.6899999999999995,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "653405018_1351380553694973_5775121707782265307_n.jpg",
+    "produto": "a7sml",
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "653405018_1351380553694973_5775121707782265307_n.jpg",
     "produto": "PapEL higienico Deluxe",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 22.99,
+    "preco_clube": 18.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "653405018_1351380553694973_5775121707782265307_n.jpg",
     "produto": "Cotlon'",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "653761524_1351380533694975_5458234542674966051_n.jpg",
     "produto": "SUBZERO",
     "preco": 3.89,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "653761524_1351380533694975_5458234542674966051_n.jpg",
     "produto": "Subzero",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "653761524_1351380533694975_5458234542674966051_n.jpg",
     "produto": "lordo pvro molto 473m",
-    "preco": null,
+    "preco": 5.69,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "653761524_1351380533694975_5458234542674966051_n.jpg",
-    "produto": "SPATEN SPATEN",
+    "produto": "SPATEN SPATEN 473ml",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "653837353_1352292920270403_5682078955903104886_n.jpg",
+    "produto": "Suclul",
+    "preco": 32.98,
+    "preco_clube": 29.98,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "653837353_1352292920270403_5682078955903104886_n.jpg",
     "produto": "CAFÉ PILÃO",
-    "preco": 32.98,
-    "preco_clube": 29.98,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "653837353_1352292920270403_5682078955903104886_n.jpg",
     "produto": "azeite De Oliva 0-Live;",
     "preco": 29.99,
     "preco_clube": 24.99,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "653837353_1352292920270403_5682078955903104886_n.jpg",
+    "produto": "s0oml",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "654248763_1352292943603734_1714686980461098120_n.jpg",
+    "produto": "Todos Os iogurTES",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "654248763_1352292943603734_1714686980461098120_n.jpg",
+    "produto": "Premium",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654269317_1352140593618969_8611195876396558155_n.jpg",
-    "produto": "BalLANTINES",
+    "produto": "cerveja",
+    "preco": 54.9,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "654269317_1352140593618969_8611195876396558155_n.jpg",
+    "produto": "Whisky",
     "preco": 59.9,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "654269317_1352140593618969_8611195876396558155_n.jpg",
+    "produto": "subzero",
+    "preco": 4.39,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "654269317_1352140593618969_8611195876396558155_n.jpg",
+    "produto": "Gerveja",
+    "preco": 55.1,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "654269317_1352140593618969_8611195876396558155_n.jpg",
+    "produto": "smirnoff",
+    "preco": 6.39,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "654280766_1352292933603735_5292822584643440316_n.jpg",
+    "produto": "Pecaou Pedaco",
+    "preco": 36.99,
+    "preco_clube": 29.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654280766_1352292933603735_5292822584643440316_n.jpg",
     "produto": "Queio Mucarela",
-    "preco": 36.99,
-    "preco_clube": 29.98,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654280766_1352292933603735_5292822584643440316_n.jpg",
-    "produto": "quimportado",
+    "produto": "Pecaou Pedaco",
     "preco": 45.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654298994_1358380876328274_2618323509617397932_n.jpg",
-    "produto": "LBNIE",
+    "produto": "chocolatebarra garoto 80g",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "654298994_1358380876328274_2618323509617397932_n.jpg",
-    "produto": "Garpto",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "654298994_1358380876328274_2618323509617397932_n.jpg",
-    "produto": "Gorpte",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "654298994_1358380876328274_2618323509617397932_n.jpg",
-    "produto": "Correl",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654359492_1352334046932957_6034529581362731918_n.jpg",
     "produto": "red label 75Oml",
     "preco": 89.9,
     "preco_clube": 69.9,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654409033_1352292946937067_254249355225233498_n.jpg",
     "produto": "Alho a Granel",
-    "preco": 17.99,
-    "preco_clube": 15.99,
-    "data_encarte": null
+    "preco": 14.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654409033_1352292946937067_254249355225233498_n.jpg",
     "produto": "Papel Higienico Deluxe",
-    "preco": 18.99,
-    "preco_clube": 14.99,
-    "data_encarte": null
+    "preco": 17.99,
+    "preco_clube": 15.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654456686_1352334093599619_4932849269439057827_n.jpg",
     "produto": "puro multe",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654456686_1352334093599619_4932849269439057827_n.jpg",
-    "produto": "nelnel",
+    "produto": "nelnel 473ml",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654456686_1352334093599619_4932849269439057827_n.jpg",
     "produto": "SPATEISPATEN",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654456686_1352334093599619_4932849269439057827_n.jpg",
     "produto": "puro malte latão 473ml",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "654474565_1352292960270399_5239136363905820910_n.jpg",
-    "produto": "Slege",
-    "preco": 35.99,
-    "preco_clube": 27.99,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654474565_1352292960270399_5239136363905820910_n.jpg",
     "produto": "ReMoso",
     "preco": 18.99,
     "preco_clube": 15.99,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654474565_1352292960270399_5239136363905820910_n.jpg",
     "produto": "Caetes Ou Porto",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 35.99,
+    "preco_clube": 27.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654675006_1352126343620394_2553022792392197510_n.jpg",
     "produto": "cerveja Stella artois",
     "preco": 6.59,
     "preco_clube": 3.89,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654675006_1352126343620394_2553022792392197510_n.jpg",
     "produto": "lotuo 473ml",
     "preco": 6.39,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654696251_1352126346953727_6474291648264157227_n.jpg",
     "produto": "Whisky ballantine's",
-    "preco": 7.99,
-    "preco_clube": 6.99,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654696251_1352126346953727_6474291648264157227_n.jpg",
     "produto": "Smirnoff ice red",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 7.99,
+    "preco_clube": 6.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654768316_1355916006574761_2238704185524209798_n.jpg",
-    "produto": "Rieieralves",
+    "produto": "CARNE",
     "preco": 89.99,
     "preco_clube": 84.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654768316_1355916006574761_2238704185524209798_n.jpg",
-    "produto": "Riberalves",
-    "preco": null,
+    "produto": "Postade Bacalhau",
+    "preco": 11.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654768316_1355916006574761_2238704185524209798_n.jpg",
     "produto": "Sadia",
-    "preco": null,
+    "preco": 14.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654768316_1355916006574761_2238704185524209798_n.jpg",
     "produto": "Soerecoxasadia",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654798990_1352334100266285_217917816644633842_n.jpg",
-    "produto": "latão",
+    "produto": "latão 473ml",
     "preco": 4.19,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654798990_1352334100266285_217917816644633842_n.jpg",
-    "produto": "BRAHMA",
+    "produto": "BRAHMA 473ml",
     "preco": 52.68,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654798990_1352334100266285_217917816644633842_n.jpg",
-    "produto": "latão",
+    "produto": "latão 473ml",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654798990_1352334100266285_217917816644633842_n.jpg",
     "produto": "SUBZERO  SUBZERO",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654860497_1352292993603729_7624035337606485740_n.jpg",
     "produto": "Leite condensado Moca",
-    "preco": 5.99,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 6.99,
+    "preco_clube": 5.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654860497_1352292993603729_7624035337606485740_n.jpg",
     "produto": "Molico",
-    "preco": 15.99,
+    "preco": 19.99,
+    "preco_clube": 15.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "654860497_1352292993603729_7624035337606485740_n.jpg",
+    "produto": "Mainisierto",
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654860497_1352292993603729_7624035337606485740_n.jpg",
     "produto": "Molico",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654860497_1352292993603729_7624035337606485740_n.jpg",
     "produto": "VINHO",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654878125_1355081373324891_4713189087895131343_n.jpg",
     "produto": "PÁ, ACÉM OU MÚSCULO",
     "preco": 37.99,
     "preco_clube": 30.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "654878125_1355081373324891_4713189087895131343_n.jpg",
+    "produto": "Moido",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "654878125_1355081373324891_4713189087895131343_n.jpg",
     "produto": "Costela Bovina",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "654976838_1351380510361644_2012210785096308434_n.jpg",
-    "produto": "Juilri",
-    "preco": 44.98,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "654976838_1351380510361644_2012210785096308434_n.jpg",
     "produto": "Alcatra Bovina",
-    "preco": 49.98,
+    "preco": 44.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655151039_1355916109908084_6463888039495349935_n.jpg",
+    "produto": "CARNE",
+    "preco": 44.98,
+    "preco_clube": 37.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655151039_1355916109908084_6463888039495349935_n.jpg",
     "produto": "Alcatra Bovina",
-    "preco": 37.99,
-    "preco_clube": 30.98,
-    "data_encarte": null
+    "preco": 30.98,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655151039_1355916109908084_6463888039495349935_n.jpg",
     "produto": "Pa, ACÉM OU",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655151039_1355916109908084_6463888039495349935_n.jpg",
+    "produto": "MoiDo",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655288783_1355038366662525_7332620558538909013_n.jpg",
+    "produto": "Alho Triturado",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655288783_1355038366662525_7332620558538909013_n.jpg",
     "produto": "Ttuparo",
+    "preco": 9.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "655288783_1355038366662525_7332620558538909013_n.jpg",
+    "produto": "EnCONTRE",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655288783_1355038366662525_7332620558538909013_n.jpg",
+    "produto": "MaÇÃS DO BEMI",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655588895_1355916009908094_2373982798446536415_n.jpg",
+    "produto": "CARNE",
+    "preco": 59.99,
+    "preco_clube": 54.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655588895_1355916009908094_2373982798446536415_n.jpg",
     "produto": "contrafilÉ Bovino",
-    "preco": 64.99,
-    "preco_clube": 54.98,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "655588895_1355916009908094_2373982798446536415_n.jpg",
     "produto": "coracaq Daalcatra",
-    "preco": 59.99,
+    "preco": 64.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
-    "imagem": "655628695_1355081369991558_4524524111921359477_n.jpg",
-    "produto": "Tio Mingote",
-    "preco": 16.99,
-    "preco_clube": 11.99,
-    "data_encarte": null
+    "imagem": "655626622_1355041726662189_9119686573863756868_n.jpg",
+    "produto": "Melancia",
+    "preco": 3.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655626622_1355041726662189_9119686573863756868_n.jpg",
+    "produto": "AmarelA importada",
+    "preco": 13.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655626622_1355041726662189_9119686573863756868_n.jpg",
+    "produto": "EnCoNTRE",
+    "preco": 5.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "655628695_1355081369991558_4524524111921359477_n.jpg",
     "produto": "arroz Tio Mingote Ou",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 19.99,
+    "preco_clube": 11.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655628695_1355081369991558_4524524111921359477_n.jpg",
     "produto": "Salsicha",
-    "preco": null,
+    "preco": 16.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655670058_1352292956937066_158251242148957243_n.jpg",
     "produto": "PÁ, ACÉM OU MÚSCULO",
-    "preco": 37.99,
-    "preco_clube": 30.98,
-    "data_encarte": null
+    "preco": 18.98,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655670058_1352292956937066_158251242148957243_n.jpg",
+    "produto": "Moido",
+    "preco": 24.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "655670058_1352292956937066_158251242148957243_n.jpg",
     "produto": "File quFilezinko 0E",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 37.99,
+    "preco_clube": 30.98,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "655750535_1356848329814862_7475977719500190796_n.jpg",
     "produto": "periquita Tint",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "655750535_1356848329814862_7475977719500190796_n.jpg",
+    "produto": "Opções ponlunguesas",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "655750535_1356848329814862_7475977719500190796_n.jpg",
+    "produto": "PERIQUITA",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656020074_1355081406658221_5578932717473075937_n.jpg",
     "produto": "batata-inglesa",
-    "preco": 3.99,
+    "preco": 6.99,
+    "preco_clube": 3.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656020074_1355081406658221_5578932717473075937_n.jpg",
+    "produto": "PÁSCOA CCOFERBACK",
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656020074_1355081406658221_5578932717473075937_n.jpg",
     "produto": "cebola Brawica",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "656022670_1355916036574758_7248529205027992561_n.jpg",
+    "produto": "CARNE",
+    "preco": 24.99,
+    "preco_clube": 19.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656022670_1355916036574758_7248529205027992561_n.jpg",
     "produto": "Linguica",
-    "preco": 24.99,
+    "preco": 32.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656025566_1355081379991557_7514266700089372046_n.jpg",
     "produto": "CaRR",
     "preco": 13.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "656025566_1355081379991557_7514266700089372046_n.jpg",
+    "produto": "PÁSCOA CCOFERBACK",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656025566_1355081379991557_7514266700089372046_n.jpg",
     "produto": "azeite De oliva 0-Live;",
-    "preco": null,
+    "preco": 24.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "656025566_1355081379991557_7514266700089372046_n.jpg",
+    "produto": "s0Oml",
+    "preco": 29.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656169317_1355916003241428_2552741019416319144_n.jpg",
+    "produto": "CARNE",
+    "preco": 4.39,
+    "preco_clube": 3.89,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656169317_1355916003241428_2552741019416319144_n.jpg",
     "produto": "Subzero",
-    "preco": 4.39,
-    "preco_clube": 3.89,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656169317_1355916003241428_2552741019416319144_n.jpg",
     "produto": "AmacianteYpe",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656210370_1356848216481540_3681620762322619492_n.jpg",
     "produto": "udosi",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "656210370_1356848216481540_3681620762322619492_n.jpg",
+    "produto": "Opções angenfinas",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656210370_1356848216481540_3681620762322619492_n.jpg",
+    "produto": "MAYCR",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656322611_1352292950270400_3700579564159995120_n.jpg",
-    "produto": "Brilhante",
+    "produto": "Lava-roupa Em PÓ 16kg",
     "preco": 14.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656322611_1352292950270400_3700579564159995120_n.jpg",
-    "produto": "Lava-roupa Em PÓ",
+    "produto": "Pecaq pedaco",
     "preco": 36.99,
     "preco_clube": 29.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656353176_1355039409995754_3113210318014242229_n.jpg",
+    "produto": "MaÇã RED",
+    "preco": 3.39,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656353176_1355039409995754_3113210318014242229_n.jpg",
+    "produto": "Canjica cozida",
+    "preco": 12.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656353176_1355039409995754_3113210318014242229_n.jpg",
+    "produto": "EnCoNTRE",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656353176_1355039409995754_3113210318014242229_n.jpg",
     "produto": "canjica",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656353176_1355039409995754_3113210318014242229_n.jpg",
     "produto": "Vapza",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
-    "imagem": "656466388_1357724639727231_2534895351777072301_n.jpg",
-    "produto": "Riberalves",
-    "preco": 89.99,
-    "preco_clube": 84.98,
-    "data_encarte": null
+    "imagem": "656353176_1355039409995754_3113210318014242229_n.jpg",
+    "produto": "Salada De frutas 100g",
+    "preco": 15.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656466388_1357724639727231_2534895351777072301_n.jpg",
     "produto": "Postade Bacalkau",
+    "preco": 89.99,
+    "preco_clube": 84.98,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "656473788_1356848163148212_5905825732968571708_n.jpg",
+    "produto": "Opções angenfinas",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656473788_1356848163148212_5905825732968571708_n.jpg",
+    "produto": "Vinho argentino",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656633796_1360991656067196_577668876311076682_n.jpg",
     "produto": "Alho a Granel",
-    "preco": 16.99,
+    "preco": 19.99,
     "preco_clube": 14.99,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656633796_1360991656067196_577668876311076682_n.jpg",
     "produto": "cartelo c/",
+    "preco": 15.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "656647591_1355916016574760_2758012902982911277_n.jpg",
+    "produto": "CARNE",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656647591_1355916016574760_2758012902982911277_n.jpg",
     "produto": "rodos 0s eiscoitos",
-    "preco": 10.89,
-    "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "656647591_1355916016574760_2758012902982911277_n.jpg",
-    "produto": "CLUB",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656647591_1355916016574760_2758012902982911277_n.jpg",
     "produto": "Bombom Garoto sortido",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 17.99,
+    "preco_clube": 10.89,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656647591_1355916016574760_2758012902982911277_n.jpg",
     "produto": "Garato",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656674900_1356848076481554_7755752647448357972_n.jpg",
+    "produto": "Vinho Argentino",
+    "preco": 9.9,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656674900_1356848076481554_7755752647448357972_n.jpg",
+    "produto": "Argentinos e",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656674900_1356848076481554_7755752647448357972_n.jpg",
     "produto": "Adega",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "656674900_1356848076481554_7755752647448357972_n.jpg",
-    "produto": "Prezunicl",
+    "produto": "Portugueses",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656691604_1358475436318818_7851131973360318684_n.jpg",
+    "produto": "Você sabia que",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656691604_1358475436318818_7851131973360318684_n.jpg",
+    "produto": "não de Portugal?",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656691604_1358475436318818_7851131973360318684_n.jpg",
+    "produto": "Prezu",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656847668_1356848129814882_8616310721566859862_n.jpg",
     "produto": "Vinho argertino",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656847668_1356848129814882_8616310721566859862_n.jpg",
+    "produto": "Opções angenfinas",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656899321_1355081356658226_6488613008823554987_n.jpg",
+    "produto": "Ovos Brancos Grandies",
+    "preco": 15.99,
+    "preco_clube": 14.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656984634_1360991662733862_422436678633992616_n.jpg",
     "produto": "AcÉM OU M",
     "preco": 37.99,
     "preco_clube": 30.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "656984634_1360991662733862_422436678633992616_n.jpg",
+    "produto": "MoiDO",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "656984634_1360991662733862_422436678633992616_n.jpg",
     "produto": "Saithe Riberalves:",
-    "preco": null,
+    "preco": 79.98,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "656984634_1360991662733862_422436678633992616_n.jpg",
-    "produto": "Riberalves",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657047094_1357724676393894_1595830831297595336_n.jpg",
-    "produto": "PeT Soom",
-    "preco": 29.99,
-    "preco_clube": 24.99,
-    "data_encarte": null
-  },
-  {
-    "imagem": "657047094_1357724676393894_1595830831297595336_n.jpg",
-    "produto": "Prrnc",
+    "produto": "quprimor",
     "preco": 6.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657047094_1357724676393894_1595830831297595336_n.jpg",
     "produto": "OlIve",
-    "preco": null,
+    "preco": 29.99,
+    "preco_clube": 24.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "657047094_1357724676393894_1595830831297595336_n.jpg",
+    "produto": "sooml",
+    "preco": 8.49,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657263496_1355081359991559_5919598600313758431_n.jpg",
     "produto": "MaÇa cala importada",
     "preco": 13.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657263496_1355081359991559_5919598600313758431_n.jpg",
     "produto": "Maneapalmer",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
-    "produto": "Tqvoin",
+    "produto": "Gin Gordow\"s 269ml",
     "preco": 79.9,
     "preco_clube": 5.79,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
+    "produto": "WhISKY",
+    "preco": 69.9,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
+    "produto": "cerveja Spaten",
+    "preco": 85.69,
+    "preco_clube": 50.28,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
+    "produto": "inelinel",
+    "preco": 59.9,
+    "preco_clube": 7.29,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
+    "produto": "cerveja heineken",
+    "preco": 52.68,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
+    "produto": "Smirnoff ice 269ml",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657323481_1357730643059964_6025991507952851868_n.jpg",
+    "produto": "cerveja",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657323693_1358532106313151_5608222172202236352_n.jpg",
     "produto": "PÁ, ACÉM OU MÚSCULO",
-    "preco": 89.99,
-    "preco_clube": 37.99,
-    "data_encarte": null
+    "preco": 37.99,
+    "preco_clube": 30.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657323693_1358532106313151_5608222172202236352_n.jpg",
+    "produto": "MoiDo",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657323693_1358532106313151_5608222172202236352_n.jpg",
     "produto": "Posta DE Bacalhau",
-    "preco": 30.98,
+    "preco": 89.99,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "657323693_1358532106313151_5608222172202236352_n.jpg",
-    "produto": "Riberalves",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657344023_1360780482754980_7146054077733917713_n.jpg",
     "produto": "Ipote) I9",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "657344023_1360780482754980_7146054077733917713_n.jpg",
+    "produto": "EnCoNTRE 500g",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657344023_1360780482754980_7146054077733917713_n.jpg",
+    "produto": "ovos BRAWNCOS",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657344023_1360780482754980_7146054077733917713_n.jpg",
+    "produto": "canjica cozida 500g",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657356826_1358380689661626_1240629142387657676_n.jpg",
+    "produto": "KITKAT 41,5g",
+    "preco": 5.49,
+    "preco_clube": 2.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657356826_1358380689661626_1240629142387657676_n.jpg",
     "produto": "Doniitgo.",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657368347_1355916019908093_2699861128382671613_n.jpg",
-    "produto": "Mimmc",
-    "preco": 16.99,
-    "preco_clube": null,
-    "data_encarte": null
+    "produto": "CARNE",
+    "preco": 44.98,
+    "preco_clube": 16.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657368347_1355916019908093_2699861128382671613_n.jpg",
     "produto": "Papel Higienico Minmo",
     "preco": 49.99,
-    "preco_clube": 44.98,
-    "data_encarte": null
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657375902_1355915999908095_4403565249302756873_n.jpg",
+    "produto": "CARNE",
+    "preco": 17.99,
+    "preco_clube": 15.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657375902_1355915999908095_4403565249302756873_n.jpg",
     "produto": "Seara",
-    "preco": 15.99,
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657375902_1355915999908095_4403565249302756873_n.jpg",
     "produto": "argentinos",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657377083_1360780486088313_8960356589935199256_n.jpg",
     "produto": "ORQUÍDEA MIX",
-    "preco": null,
+    "preco": 39.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657377083_1360780486088313_8960356589935199256_n.jpg",
+    "produto": "EnCONTRE",
+    "preco": 59.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657392198_1358532006313161_9081134552964568430_n.jpg",
+    "produto": "Pecaou Pedaco",
+    "preco": 36.99,
+    "preco_clube": 32.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657392198_1358532006313161_9081134552964568430_n.jpg",
     "produto": "Queijo Mucarela",
-    "preco": 36.99,
-    "preco_clube": 32.98,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "657392198_1358532006313161_9081134552964568430_n.jpg",
+    "produto": "Pecaou Pedaco",
+    "preco": 42.99,
+    "preco_clube": 39.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657392198_1358532006313161_9081134552964568430_n.jpg",
     "produto": "queijo Pratonacional",
-    "preco": 42.99,
-    "preco_clube": 39.98,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657423589_1360991752733853_7794359521581315783_n.jpg",
     "produto": "Peixesalgado Saithe",
     "preco": 15.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657423589_1360991752733853_7794359521581315783_n.jpg",
-    "produto": "Geara)",
+    "produto": "Geara) 1kg",
     "preco": 69.99,
     "preco_clube": 54.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657423589_1360991752733853_7794359521581315783_n.jpg",
     "produto": "Sobrecoxasadia ou",
-    "preco": null,
+    "preco": 54.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657522588_1358532099646485_109366947002131474_n.jpg",
     "produto": "caetes Ou Porto alegre",
-    "preco": 18.99,
-    "preco_clube": 15.99,
-    "data_encarte": null
+    "preco": 35.99,
+    "preco_clube": 29.98,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657522588_1358532099646485_109366947002131474_n.jpg",
-    "produto": "Pocos De caldas",
-    "preco": 35.99,
-    "preco_clube": 29.98,
-    "data_encarte": null
+    "produto": "Pocos De caldas 400g",
+    "preco": 18.99,
+    "preco_clube": 15.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657549848_1357724603060568_6967213935875750317_n.jpg",
     "produto": "contrafile Bovino",
     "preco": 59.99,
     "preco_clube": 46.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657549848_1357724603060568_6967213935875750317_n.jpg",
     "produto": "MúscULo",
     "preco": 37.99,
     "preco_clube": 29.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "657549848_1357724603060568_6967213935875750317_n.jpg",
+    "produto": "Moido",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657550417_1358532046313157_1803229143285260006_n.jpg",
     "produto": "Alhoa Granel",
-    "preco": 16.99,
-    "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "657550417_1358532046313157_1803229143285260006_n.jpg",
-    "produto": "Deunc",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 17.99,
+    "preco_clube": 10.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657550417_1358532046313157_1803229143285260006_n.jpg",
     "produto": "Papel Higienico deluxe",
-    "preco": null,
+    "preco": 12.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657717974_1360991672733861_1412549520699131488_n.jpg",
     "produto": "Alma Lusa",
     "preco": 29.99,
     "preco_clube": 24.99,
-    "data_encarte": null
-  },
-  {
-    "imagem": "657717974_1360991672733861_1412549520699131488_n.jpg",
-    "produto": "Cuisinegco",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657717974_1360991672733861_1412549520699131488_n.jpg",
     "produto": "Newbraz",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 23.99,
+    "preco_clube": 19.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657717974_1360991672733861_1412549520699131488_n.jpg",
     "produto": "RapMix",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "657780227_1361915952641433_1001664290803275319_n.jpg",
+    "produto": "CARNE",
+    "preco": 79.99,
+    "preco_clube": 49.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657780227_1361915952641433_1001664290803275319_n.jpg",
     "produto": "contrafile tradicional",
     "preco": 89.99,
     "preco_clube": 59.99,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657780227_1361915952641433_1001664290803275319_n.jpg",
     "produto": "File-Mignon Bovino SeM",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657923646_1355081366658225_2798958333933056941_n.jpg",
     "produto": "Sobrecoxa Assa Facil",
-    "preco": null,
+    "preco": 14.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657923646_1355081366658225_2798958333933056941_n.jpg",
     "produto": "FrangoSadia",
-    "preco": null,
+    "preco": 24.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "657953286_1357724633060565_311111805745531591_n.jpg",
     "produto": "Lava-Roupas EM PÓ Surf",
     "preco": 15.99,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco_clube": 12.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "657953286_1357724633060565_311111805745531591_n.jpg",
     "produto": "alcatra Bovinarouu",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658018788_1360991612733867_3558172561592106643_n.jpg",
+    "produto": "Maca Galavimportadas",
+    "preco": 13.99,
+    "preco_clube": 7.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658018788_1360991612733867_3558172561592106643_n.jpg",
+    "produto": "banana-Prata",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "658132430_1356848263148202_6604804201329404373_n.jpg",
+    "produto": "Opções povfuguesas",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658132430_1356848263148202_6604804201329404373_n.jpg",
+    "produto": "Vinho PORTUGUÊs",
+    "preco": 39.9,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658139505_1355081363324892_5859252999556401030_n.jpg",
     "produto": "Batata concelada",
     "preco": 17.99,
     "preco_clube": 15.99,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658139505_1355081363324892_5859252999556401030_n.jpg",
+    "produto": "PÁSCOA CCOFERBACK",
+    "preco": 28.99,
+    "preco_clube": 25.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658147444_1358532059646489_6624724929725286405_n.jpg",
     "produto": "tlor de lis/cuidado %o coco 1,6k",
+    "preco": 15.99,
+    "preco_clube": 12.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658147444_1358532059646489_6624724929725286405_n.jpg",
+    "produto": "GoRsHBCK",
     "preco": 36.99,
     "preco_clube": 32.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658147444_1358532059646489_6624724929725286405_n.jpg",
     "produto": "queijo Mucarela",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658147444_1358532059646489_6624724929725286405_n.jpg",
+    "produto": "Pecaou Pedaco",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "658200984_1361915819308113_3692935966037185023_n.jpg",
+    "produto": "CARNE",
+    "preco": 84.99,
+    "preco_clube": 79.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658200984_1361915819308113_3692935966037185023_n.jpg",
     "produto": "Lombo DE Bacalhau",
-    "preco": 84.99,
-    "preco_clube": 79.98,
-    "data_encarte": null
-  },
-  {
-    "imagem": "658200984_1361915819308113_3692935966037185023_n.jpg",
-    "produto": "Riberalves",
-    "preco": 69.99,
-    "preco_clube": 54.98,
-    "data_encarte": null
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658200984_1361915819308113_3692935966037185023_n.jpg",
     "produto": "Peixe salgado Saithe",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 69.99,
+    "preco_clube": 54.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658352539_1361915909308104_4316390105639044113_n.jpg",
-    "produto": "ViNHOS importados E",
-    "preco": 44.98,
+    "produto": "CARNE",
+    "preco": 49.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658352539_1361915909308104_4316390105639044113_n.jpg",
     "produto": "Tradicional",
-    "preco": 49.99,
+    "preco": 44.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658360411_1361915829308112_2312284931541010324_n.jpg",
+    "produto": "CARME",
+    "preco": 5.49,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658360411_1361915829308112_2312284931541010324_n.jpg",
     "produto": "Glória",
-    "preco": 5.49,
+    "preco": 5.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658360411_1361915829308112_2312284931541010324_n.jpg",
     "produto": "Leite condensado",
-    "preco": 5.99,
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658360411_1361915829308112_2312284931541010324_n.jpg",
     "produto": "Lavaeroupas Liquido",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 24.99,
+    "preco_clube": 19.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "658401794_1360991599400535_3617990568357849287_n.jpg",
+    "produto": "FÉRIVHA",
+    "preco": 23.99,
+    "preco_clube": 10.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658401794_1360991599400535_3617990568357849287_n.jpg",
     "produto": "PerDigagbresa",
     "preco": 19.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658401794_1360991599400535_3617990568357849287_n.jpg",
+    "produto": "GoPRHBMAECK S",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658401794_1360991599400535_3617990568357849287_n.jpg",
     "produto": "Salsicha Hot Dog",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "658474245_1358532002979828_4025976577787852359_n.jpg",
     "produto": "azeite de oliva 0-Live,",
+    "preco": 29.99,
+    "preco_clube": 24.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "658474245_1358532002979828_4025976577787852359_n.jpg",
+    "produto": "sooml",
     "preco": 32.98,
     "preco_clube": 29.98,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "658902402_1361915875974774_543093198597357874_n.jpg",
+    "produto": "CARNE",
+    "preco": 17.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658902402_1361915875974774_543093198597357874_n.jpg",
     "produto": "Bombom Garoto sortido",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "658902402_1361915875974774_543093198597357874_n.jpg",
-    "produto": "Gorolo",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "658902402_1361915875974774_543093198597357874_n.jpg",
     "produto": "Dorites",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659031120_1358532082979820_1984644631660218667_n.jpg",
     "produto": "Italac",
-    "preco": 5.49,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 2.89,
+    "preco_clube": 2.39,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659031120_1358532082979820_1984644631660218667_n.jpg",
     "produto": "italac",
-    "preco": null,
+    "preco": 5.49,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659031120_1358532082979820_1984644631660218667_n.jpg",
     "produto": "Italac",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659031120_1358532082979820_1984644631660218667_n.jpg",
     "produto": "Creme De Leite italac",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659031120_1358532082979820_1984644631660218667_n.jpg",
     "produto": "Pkcconibu",
-    "preco": null,
+    "preco": 6.89,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659049427_1357724599727235_8586760481962023787_n.jpg",
     "produto": "Linguica de",
-    "preco": 17.99,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 19.99,
+    "preco_clube": 17.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659049427_1357724599727235_8586760481962023787_n.jpg",
-    "produto": "RapMY",
+    "produto": "Batata PrÉ-Frita Rapmix",
     "preco": 22.99,
     "preco_clube": 18.99,
-    "data_encarte": null
-  },
-  {
-    "imagem": "659049427_1357724599727235_8586760481962023787_n.jpg",
-    "produto": "Cong 2k9",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659049427_1357724599727235_8586760481962023787_n.jpg",
     "produto": "RapMir",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659685096_1357724593060569_6846971895373400879_n.jpg",
     "produto": "bombom Garoto sortido",
-    "preco": 8.49,
-    "preco_clube": 5.99,
-    "data_encarte": null
+    "preco": 5.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659685096_1357724593060569_6846971895373400879_n.jpg",
     "produto": "Garato",
-    "preco": 10.89,
+    "preco": 8.49,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659685096_1357724593060569_6846971895373400879_n.jpg",
     "produto": "Leite condensado Moca",
-    "preco": null,
+    "preco": 10.89,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "659708239_1357724596393902_8189351950123619294_n.jpg",
     "produto": "alcatra Bovina Ou",
-    "preco": 64.99,
-    "preco_clube": 54.98,
-    "data_encarte": null
+    "preco": 49.99,
+    "preco_clube": 44.98,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659708239_1357724596393902_8189351950123619294_n.jpg",
     "produto": "Maminha Maturatta",
-    "preco": 49.99,
-    "preco_clube": 44.98,
-    "data_encarte": null
+    "preco": 64.99,
+    "preco_clube": 54.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "659708239_1357724596393902_8189351950123619294_n.jpg",
+    "produto": "CaTk",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659708350_1360991659400529_8868196054877439449_n.jpg",
     "produto": "Italac",
-    "preco": 6.29,
+    "preco": 19.99,
     "preco_clube": 5.49,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659708350_1360991659400529_8868196054877439449_n.jpg",
     "produto": "ItALAC",
+    "preco": 6.29,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "659708350_1360991659400529_8868196054877439449_n.jpg",
+    "produto": "Senclc",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "659708350_1360991659400529_8868196054877439449_n.jpg",
     "produto": "Alho  Granel",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "659823675_1360780479421647_8314721767723951717_n.jpg",
+    "produto": "Mmoranga",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "659823675_1360780479421647_8314721767723951717_n.jpg",
+    "produto": "Salada",
+    "preco": 12.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "659823675_1360780479421647_8314721767723951717_n.jpg",
+    "produto": "EnCONTRE",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "659823675_1360780479421647_8314721767723951717_n.jpg",
+    "produto": "MaÇÃ Vermelha",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "659823675_1360780479421647_8314721767723951717_n.jpg",
+    "produto": "Mace Gala",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660133420_1357712409728454_639683997631337580_n.jpg",
-    "produto": "Cokclube",
+    "produto": "orouidea",
+    "preco": 59.99,
+    "preco_clube": 12.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "660133420_1357712409728454_639683997631337580_n.jpg",
+    "produto": "Flor zanioculoa",
     "preco": 44.99,
+    "preco_clube": 32.99,
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "660133420_1357712409728454_639683997631337580_n.jpg",
+    "produto": "FlorMinicrisantemo",
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660133420_1357712409728454_639683997631337580_n.jpg",
     "produto": "Cachepo21",
-    "preco": null,
+    "preco": 19.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "660171003_1361915852641443_8415032832803771418_n.jpg",
+    "produto": "CARME",
+    "preco": 19.99,
+    "preco_clube": 15.98,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "660171003_1361915852641443_8415032832803771418_n.jpg",
     "produto": "Geora)",
-    "preco": 15.98,
-    "preco_clube": null,
-    "data_encarte": null
+    "preco": 19.99,
+    "preco_clube": 16.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "660171003_1361915852641443_8415032832803771418_n.jpg",
     "produto": "Sobrecoxasadia qu",
-    "preco": 16.99,
+    "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "660171003_1361915852641443_8415032832803771418_n.jpg",
+    "produto": "GoPRHBMECK",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660171003_1361915852641443_8415032832803771418_n.jpg",
     "produto": "Linguica",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "660191264_1360991669400528_1670972050569159937_n.jpg",
     "produto": "Batataeinglesa",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660191264_1360991669400528_1670972050569159937_n.jpg",
     "produto": "cebola Branca",
-    "preco": null,
+    "preco": 3.99,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660260350_1361915862641442_5502481270874150965_n.jpg",
-    "produto": "toacal",
-    "preco": 37.99,
-    "preco_clube": 30.98,
-    "data_encarte": null
-  },
-  {
-    "imagem": "660260350_1361915862641442_5502481270874150965_n.jpg",
-    "produto": "Bovina Ou",
+    "produto": "CARNE",
     "preco": 49.99,
+    "preco_clube": 37.99,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "660260350_1361915862641442_5502481270874150965_n.jpg",
+    "produto": "Tradicionnal",
+    "preco": 30.98,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "660260350_1361915862641442_5502481270874150965_n.jpg",
     "produto": "Pa, acem OU MÚSCULO",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
-  },
-  {
-    "imagem": "660260350_1361915862641442_5502481270874150965_n.jpg",
-    "produto": "MoÍpo",
-    "preco": null,
-    "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "660315125_1357724606393901_6022367527987156554_n.jpg",
     "produto": "cerveja Spaten",
-    "preco": 7.29,
-    "preco_clube": 6.6899999999999995,
-    "data_encarte": null
+    "preco": 5.69,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660315125_1357724606393901_6022367527987156554_n.jpg",
-    "produto": "SPATEN SPATEN",
+    "produto": "SPATEN SPATEN 473ml",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "660315125_1357724606393901_6022367527987156554_n.jpg",
+    "produto": "inelinel 473ml",
+    "preco": 7.29,
+    "preco_clube": 6.6899999999999995,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "660315125_1357724606393901_6022367527987156554_n.jpg",
     "produto": "cervena heineken",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660666214_1358532069646488_6668584818647723221_n.jpg",
     "produto": "Todos 05iocurtes €",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "660666214_1358532069646488_6668584818647723221_n.jpg",
+    "produto": "GoRsHBCK",
+    "preco": 9.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "660666214_1358532069646488_6668584818647723221_n.jpg",
     "produto": "FormaPanco",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 1
+  },
+  {
+    "imagem": "661414783_1361915825974779_2674954801374431892_n.jpg",
+    "produto": "CARNE",
+    "preco": 12.99,
+    "preco_clube": 3.89,
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "661414783_1361915825974779_2674954801374431892_n.jpg",
     "produto": "lave 12& poque 1l rolos",
-    "preco": 12.99,
-    "preco_clube": 3.89,
-    "data_encarte": null
+    "preco": 10.99,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "661414783_1361915825974779_2674954801374431892_n.jpg",
-    "produto": "Dcuue",
+    "produto": "HYRIS",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "661414783_1361915825974779_2674954801374431892_n.jpg",
     "produto": "SUBZERO",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
   },
   {
     "imagem": "661414783_1361915825974779_2674954801374431892_n.jpg",
     "produto": "cervieaantarctica",
     "preco": null,
     "preco_clube": null,
-    "data_encarte": null
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "661599815_1358380799661615_6952354134664174517_n.jpg",
+    "produto": "Garotol",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "661599815_1358380799661615_6952354134664174517_n.jpg",
+    "produto": "GECHE",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "661599815_1358380799661615_6952354134664174517_n.jpg",
+    "produto": "Tecneodo 90g",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": null,
+    "erro_identificacao": 1
   },
   {
     "imagem": "prezunic190826.webp",
     "produto": "CARNE",
+    "preco": 46.98,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "tipos cong. 300g /",
     "preco": 54.99,
-    "preco_clube": 49.99,
-    "data_encarte": "08/20/2026"
+    "preco_clube": 15.98,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
   },
   {
     "imagem": "prezunic190826.webp",
-    "produto": "e economize nas",
+    "produto": "cliente de",
+    "preco": 59.99,
+    "preco_clube": 23.99,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "PATINHO, COXÃO MOLE, LAGARTO",
     "preco": 49.99,
-    "preco_clube": 21.29,
-    "data_encarte": "08/20/2026"
+    "preco_clube": 36.98,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
   },
   {
     "imagem": "prezunic190826.webp",
-    "produto": "inverno",
+    "produto": "ALCATRA BOVINA",
+    "preco": 16.99,
+    "preco_clube": 4.39,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "IscOITOS",
+    "preco": 23.99,
+    "preco_clube": 16.99,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "SABÃO EM PÓ OMO 1,6kg",
     "preco": 21.29,
     "preco_clube": null,
-    "data_encarte": "08/20/2026"
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
   },
   {
     "imagem": "prezunic190826.webp",
-    "produto": "sEM JURDS",
-    "preco": 46.98,
-    "preco_clube": 36.98,
-    "data_encarte": "08/20/2026"
-  },
-  {
-    "imagem": "prezunic190826.webp",
-    "produto": "crncosud",
-    "preco": 36.98,
+    "produto": "LINGUIÇA CALABRESA",
+    "preco": 4.39,
     "preco_clube": null,
-    "data_encarte": "08/20/2026"
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "CONTRAFILÉ BOVINQ",
+    "preco": 49.98,
+    "preco_clube": 13.99,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "ALCATRA MATURATTA",
+    "preco": 13.99,
+    "preco_clube": 3.89,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "HAMBÚRGUER TEXAS SEARA",
+    "preco": 3.89,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "CERVEJA ANTARCTICA SUBZERO 473ml",
+    "preco": 59.98,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "cong.",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "BURGER",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "TEXAS",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "Personal",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "PAPEL HIGIÊNICO PERSONAL",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "FILÉ DE COXA E SOBRECOXA DE",
+    "preco": 19.99,
+    "preco_clube": 19.98,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "CONTRAFILÉ BOVINO",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "FEIJÃO PRETO CUISINE&CO",
+    "preco": 5.99,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
+  },
+  {
+    "imagem": "prezunic190826.webp",
+    "produto": "Maturatta",
+    "preco": null,
+    "preco_clube": null,
+    "data_encarte": "08/20/2026",
+    "erro_identificacao": 0
   }
 ]
