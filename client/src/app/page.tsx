@@ -112,11 +112,13 @@ export default function Home() {
   const escuro = modoResolvido === 'dark';
 
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [produtosCesta, setProdutosCesta] = useState<Produto[]>([]);
   const [filtros, setFiltros] = useState<Filtros>({ produtos: [], datas: [], marcas: [] });
   const [filtroProduto, setFiltroProduto] = useState<string | null>(null);
   const [filtroData, setFiltroData] = useState<string | null>(null);
   const [filtroMarca, setFiltroMarca] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [carregandoCesta, setCarregandoCesta] = useState(true);
   const [pagina, setPagina] = useState(0);
   const [porPagina, setPorPagina] = useState(10);
 
@@ -127,6 +129,15 @@ export default function Home() {
       setFiltros(data);
     }
     carregarFiltros();
+  }, []);
+
+  useEffect(() => {
+    async function carregarCesta() {
+      const res = await fetch('/api/produtos');
+      setProdutosCesta(await res.json());
+      setCarregandoCesta(false);
+    }
+    carregarCesta();
   }, []);
 
   useEffect(() => {
@@ -156,10 +167,10 @@ export default function Home() {
 
   const produtosCestaBasica = useMemo(
     () =>
-      produtos.filter((p) =>
+      produtosCesta.filter((p) =>
         CESTA_BASICA.some((item) => p.produto.toUpperCase().includes(item))
       ),
-    [produtos]
+    [produtosCesta]
   );
 
   const totalEconomia = useMemo(
@@ -507,7 +518,7 @@ export default function Home() {
               <Typography variant="h6" gutterBottom>
                 Cesta básica · preços
               </Typography>
-              {carregando ? (
+              {carregandoCesta ? (
                 <Skeleton variant="rounded" height={340} />
               ) : (
                 <ReactECharts option={chartCestaBasica} style={{ height: 340 }} notMerge />
