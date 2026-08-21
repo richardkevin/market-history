@@ -1,4 +1,3 @@
-*.db
 debug_*.png
 .DS_Store
 __pycache__/
@@ -6,4 +5,5 @@ __pycache__/
 .produtos_extraidos*.json
 fotos_prezunic/
 encartes_prezunic/
+encartes_guanabara/
 .venv/

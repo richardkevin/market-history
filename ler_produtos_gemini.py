@@ -21,8 +21,9 @@ RETRY_DELAY = 5
 DELAY_ENTRE_REQUESTS = 4.5  # segundos (~13 RPM, margem para 15 RPM do free tier)
 
 PASTA_IMGS = "fotos_prezunic"
-BANCO_DADOS = "prezunic_produtos.db"
-MODELO_PADRAO = "gemini-3.6-flash"
+BANCO_DADOS = "encartes_produtos.db"
+MODELO_PADRAO = "gemini-3.1-flash-lite"
+SUPERMERCADO_PADRAO = "prezunic"
 
 
 class ProdutoExtraido(BaseModel):
@@ -43,7 +44,7 @@ class AnaliseEncarte(BaseModel):
     produtos: List[ProdutoExtraido] = Field(default_factory=list, description="Lista de todos os produtos anunciados na imagem com seus respectivos preços")
 
 
-PROMPT_SISTEMA = """Você é um especialista em OCR e extração estruturada de dados de encartes e tabloides de supermercados brasileiros (Prezunic).
+PROMPT_SISTEMA = """Você é um especialista em OCR e extração estruturada de dados de encartes e tabloides de supermercados brasileiros.
 Analise a imagem com altíssima atenção aos detalhes visuais e de layout.
 
 INSTRUÇÕES:
@@ -52,13 +53,12 @@ INSTRUÇÕES:
    - Nome completo do produto
    - Marca (se identificável)
    - Litragem / Peso / Embalagem / Medida (ex: 473ml, 1,6kg, kg, pacote 500g)
-   - Preço regular / sem clube (Preço normal de venda)
-   - Preço com Clube Prezunic (geralmente indicado por 'COM CLUBE', 'Clube Prezunic', 'App Prezunic' ou destaque em amarelo/vermelho ao lado do preço normal)
+   - Preço regular / sem desconto
+   - Preço promocional / com clube / app (se houver)
    - Promoções do tipo 'Leve Mais Pague Menos' ou 'Desconto percentual' (ex: 'Leve 4 Pague 3', '20% OFF')
    - Limite por cliente (ex: 'Limite de 10 Kg por cliente')
-3. NÃO confunda informações de pagamento gerais (ex: 'Parcele em 4x', 'Cashback 5%', 'Pague com Pix') com preços de produtos.
-4. Se uma imagem contiver múltiplos produtos em grade ou colunas, extraia CADA UM separadamente.
-5. Se for apenas um banner institucional ou aviso de inauguração sem produtos/preços, retorne a lista de produtos vazia.
+3. Se uma imagem contiver múltiplos produtos em grade ou colunas, extraia CADA UM separadamente.
+4. Se for apenas um banner institucional ou aviso sem produtos/preços, retorne a lista de produtos vazia.
 """
 
 
@@ -69,6 +69,7 @@ def criar_banco():
         CREATE TABLE IF NOT EXISTS produtos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             imagem TEXT NOT NULL,
+            supermercado TEXT NOT NULL DEFAULT 'prezunic',
             produto TEXT,
             marca TEXT,
             medida TEXT,
@@ -83,23 +84,39 @@ def criar_banco():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
+    # Migracao: adicionar coluna supermercado se nao existir (banco antigo)
+    c.execute("PRAGMA table_info(produtos)")
+    colunas = {row[1] for row in c.fetchall()}
+    if "supermercado" not in colunas:
+        c.execute("ALTER TABLE produtos ADD COLUMN supermercado TEXT NOT NULL DEFAULT 'prezunic'")
     conn.commit()
     return conn
 
 
-def obter_cliente_gemini(api_key: Optional[str] = None) -> genai.Client:
-    key = api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if not key:
-        print("Chave de API do Gemini não encontrada.")
-        print("Defina a variável GEMINI_API_KEY no ambiente ou passe como argumento.")
-        key = input("Cole sua chave de API Gemini (GEMINI_API_KEY): ").strip()
-    if not key:
-        print("Erro: API Key é obrigatória.")
-        sys.exit(1)
-    return genai.Client(api_key=key)
+def obter_clientes_gemini() -> list[genai.Client]:
+    """Coleta todas as API keys disponíveis e retorna lista de clientes."""
+    env_keys = [
+        "GEMINI_API_KEY",
+        "MERCADO_GEMINI_API_KEY",
+    ]
+    clientes = []
+    vistos = set()
+    for env in env_keys:
+        key = os.environ.get(env)
+        if key and key not in vistos:
+            clientes.append(genai.Client(api_key=key))
+            vistos.add(key)
+    if not clientes:
+        print("Nenhuma chave de API do Gemini encontrada.")
+        key = input("Cole sua chave de API Gemini: ").strip()
+        if not key:
+            print("Erro: API Key é obrigatória.")
+            sys.exit(1)
+        clientes.append(genai.Client(api_key=key))
+    return clientes
 
 
-MODELOS_FALLBACK = ["gemini-3.6-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+MODELOS_FALLBACK = ["gemini-3.1-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash-lite", "gemini-3.5-flash"]
 
 
 def analisar_imagem(client: genai.Client, caminho_imagem: str, modelo: str = MODELO_PADRAO) -> AnaliseEncarte:
@@ -144,7 +161,7 @@ def analisar_imagem(client: genai.Client, caminho_imagem: str, modelo: str = MOD
     raise ultimo_erro
 
 
-def salvar_resultados(caminho_imagem: str, analise: AnaliseEncarte, conn: sqlite3.Connection) -> List[dict]:
+def salvar_resultados(caminho_imagem: str, analise: AnaliseEncarte, conn: sqlite3.Connection, supermercado: str = SUPERMERCADO_PADRAO) -> List[dict]:
     cursor = conn.cursor()
     nome_arquivo = os.path.basename(caminho_imagem)
     registros = []
@@ -162,6 +179,7 @@ def salvar_resultados(caminho_imagem: str, analise: AnaliseEncarte, conn: sqlite
 
         registro = {
             "imagem": nome_arquivo,
+            "supermercado": supermercado,
             "produto": nome_completo,
             "marca": prod.marca,
             "medida": prod.medida,
@@ -178,12 +196,13 @@ def salvar_resultados(caminho_imagem: str, analise: AnaliseEncarte, conn: sqlite
         cursor.execute(
             """
             INSERT INTO produtos (
-                imagem, produto, marca, medida, preco, preco_clube,
+                imagem, supermercado, produto, marca, medida, preco, preco_clube,
                 tipo_promocao, limite, data_encarte, observacao, texto_ocr, erro_identificacao
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 nome_arquivo,
+                supermercado,
                 nome_completo,
                 prod.marca,
                 prod.medida,
@@ -207,12 +226,12 @@ def main():
     parser = argparse.ArgumentParser(description="Analisa encartes com Gemini Vision")
     parser.add_argument("imagem", nargs="?", help="Caminho de uma imagem específica (opcional)")
     parser.add_argument("--pasta", default=PASTA_IMGS, help="Pasta contendo imagens para processar")
-    parser.add_argument("--api-key", help="Chave de API do Gemini")
+    parser.add_argument("--supermercado", default=SUPERMERCADO_PADRAO, help="Nome do supermercado (default: prezunic)")
     parser.add_argument("--modelo", default=MODELO_PADRAO, help="Modelo Gemini a utilizar (ex: gemini-2.5-flash)")
     parser.add_argument("--reset-db", action="store_true", help="Recria o banco de dados antes de processar")
     args = parser.parse_args()
 
-    client = obter_cliente_gemini(args.api_key)
+    clientes = obter_clientes_gemini()
     conn = criar_banco()
 
     if args.imagem:
@@ -227,21 +246,24 @@ def main():
         ])
 
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT imagem FROM produtos")
+    cursor.execute("SELECT DISTINCT imagem FROM produtos WHERE supermercado = ?", (args.supermercado,))
     imagens_ja_processadas = {row[0] for row in cursor.fetchall()}
 
     pendentes = [arq for arq in arquivos if os.path.basename(arq) not in imagens_ja_processadas]
 
+    print(f"Supermercado: {args.supermercado}")
+    print(f"API keys disponíveis: {len(clientes)}")
     print(f"Total: {len(arquivos)} | Já processadas: {len(imagens_ja_processadas)} | Pendentes: {len(pendentes)}")
     print(f"Usando modelo: {args.modelo}\n")
 
     todos_registros = []
     processadas_nesta_execucao = 0
     for i, arq in enumerate(pendentes, 1):
+        client = clientes[(i - 1) % len(clientes)]
         print(f"[{i}/{len(pendentes)}] Analisando: {arq}")
         try:
             analise = analisar_imagem(client, arq, modelo=args.modelo)
-            registros = salvar_resultados(arq, analise, conn)
+            registros = salvar_resultados(arq, analise, conn, supermercado=args.supermercado)
             todos_registros.extend(registros)
             processadas_nesta_execucao += 1
 
@@ -256,15 +278,22 @@ def main():
             msg = str(e).lower()
             if "429" in msg or "quota" in msg or "rate" in msg or "resource_exhausted" in msg:
                 if "rpv" in msg or "day" in msg or "daily" in msg:
+                    if len(clientes) > 1:
+                        clientes.remove(client)
+                        if not clientes:
+                            print(f"  [RPD EXCEDIDO] Todas as keys atingiram limite diário.")
+                            break
+                        print(f"  [RPD] Key removida. Restam {len(clientes)} keys.")
+                        continue
                     print(f"  [RPD EXCEDIDO] Limite diário atingido. Reset à meia-noite Pacific Time.")
-                    print(f"  Execute novamente amanhã ou use outro projeto.")
                     break
                 for espera in [30, 60, 120]:
                     print(f"  [RATE LIMIT] Aguardando {espera}s...")
                     time.sleep(espera)
+                    next_client = clientes[(i) % len(clientes)]
                     try:
-                        analise = analisar_imagem(client, arq, modelo=args.modelo)
-                        registros = salvar_resultados(arq, analise, conn)
+                        analise = analisar_imagem(next_client, arq, modelo=args.modelo)
+                        registros = salvar_resultados(arq, analise, conn, supermercado=args.supermercado)
                         todos_registros.extend(registros)
                         processadas_nesta_execucao += 1
                         print(f"  -> {len(analise.produtos)} produto(s) identificado(s) (retry OK)")
@@ -291,7 +320,7 @@ def main():
         json.dump(todos_registros, f, ensure_ascii=False, indent=2)
 
     print(f"\nConcluído! {len(todos_registros)} produtos novos de {processadas_nesta_execucao} imagens processadas nesta execução.")
-    print(f"Total no banco: {len(imagens_ja_processadas) + processadas_nesta_execucao} imagens.")
+    print(f"Total no banco ({args.supermercado}): {len(imagens_ja_processadas) + processadas_nesta_execucao} imagens.")
 
 
 if __name__ == "__main__":
