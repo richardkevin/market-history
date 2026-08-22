@@ -48,10 +48,10 @@ export default function AppHeader() {
         </Box>
         <Stack sx={{ flexGrow: 1 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
-            Encartes
+            Market
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Painel de preços · Prezunic
+            Histórico de preços
           </Typography>
         </Stack>
         <Tooltip title={isDark ? 'Tema claro' : 'Tema escuro'}>

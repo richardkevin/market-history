@@ -33,8 +33,8 @@ export function useProdutos() {
   }, []);
 
   useEffect(() => {
+    let vigente = true;
     async function carregarProdutos() {
-      setCarregando(true);
       const params = new URLSearchParams();
       if (filtroProduto) params.set('produto', filtroProduto);
       if (filtroData) params.set('data_encarte', filtroData);
@@ -42,10 +42,15 @@ export function useProdutos() {
 
       const res = await fetch(`/api/produtos?${params.toString()}`);
       const data = await res.json();
-      setProdutos(data);
-      setCarregando(false);
+      if (vigente) {
+        setProdutos(data);
+        setCarregando(false);
+      }
     }
     carregarProdutos();
+    return () => {
+      vigente = false;
+    };
   }, [filtroProduto, filtroData, filtroMarca]);
 
   const temFiltro = Boolean(filtroProduto || filtroData || filtroMarca);
