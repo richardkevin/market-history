@@ -7,9 +7,16 @@ import type { Produto, Filtros } from '@/lib/types';
 export function useProdutos() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [produtosCesta, setProdutosCesta] = useState<Produto[]>([]);
-  const [filtros, setFiltros] = useState<Filtros>({ produtos: [], datas: [], marcas: [] });
+  const [filtros, setFiltros] = useState<Filtros>({
+    produtos: [],
+    anos: [],
+    meses: [],
+    marcas: [],
+    ultimaData: null,
+  });
   const [filtroProduto, setFiltroProduto] = useState<string | null>(null);
-  const [filtroData, setFiltroData] = useState<string | null>(null);
+  const [filtroAnos, setFiltroAnos] = useState<number[]>([]);
+  const [filtroMeses, setFiltroMeses] = useState<number[]>([]);
   const [filtroMarca, setFiltroMarca] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [carregandoCesta, setCarregandoCesta] = useState(true);
@@ -37,7 +44,8 @@ export function useProdutos() {
     async function carregarProdutos() {
       const params = new URLSearchParams();
       if (filtroProduto) params.set('produto', filtroProduto);
-      if (filtroData) params.set('data_encarte', filtroData);
+      if (filtroAnos.length) params.set('anos', filtroAnos.join(','));
+      if (filtroMeses.length) params.set('meses', filtroMeses.join(','));
       if (filtroMarca) params.set('marca', filtroMarca);
 
       const res = await fetch(`/api/produtos?${params.toString()}`);
@@ -51,13 +59,16 @@ export function useProdutos() {
     return () => {
       vigente = false;
     };
-  }, [filtroProduto, filtroData, filtroMarca]);
+  }, [filtroProduto, filtroAnos, filtroMeses, filtroMarca]);
 
-  const temFiltro = Boolean(filtroProduto || filtroData || filtroMarca);
+  const temFiltro = Boolean(
+    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca
+  );
 
   const limparFiltros = () => {
     setFiltroProduto(null);
-    setFiltroData(null);
+    setFiltroAnos([]);
+    setFiltroMeses([]);
     setFiltroMarca(null);
   };
 
@@ -82,7 +93,7 @@ export function useProdutos() {
   const totalComPreco = produtos.filter((p) => p.preco).length;
   const precoMedio =
     produtos.reduce((acc, p) => acc + (p.preco || 0), 0) / (totalComPreco || 1);
-  const ultimaData = filtros.datas.length ? filtros.datas[filtros.datas.length - 1] : null;
+  const ultimaData = filtros.ultimaData;
 
   return {
     produtos,
@@ -90,8 +101,10 @@ export function useProdutos() {
     filtros,
     filtroProduto,
     setFiltroProduto,
-    filtroData,
-    setFiltroData,
+    filtroAnos,
+    setFiltroAnos,
+    filtroMeses,
+    setFiltroMeses,
     filtroMarca,
     setFiltroMarca,
     carregando,

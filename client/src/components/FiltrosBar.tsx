@@ -10,13 +10,32 @@ import Search from '@mui/icons-material/Search';
 import RestartAlt from '@mui/icons-material/RestartAlt';
 import type { Filtros } from '@/lib/types';
 
+const NOMES_MESES = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
+const rotuloMes = (mes: number) => NOMES_MESES[mes - 1] ?? String(mes);
+
 interface FiltrosBarProps {
   opcoes: Filtros;
   filtroProduto: string | null;
-  filtroData: string | null;
+  filtroAnos: number[];
+  filtroMeses: number[];
   filtroMarca: string | null;
   onChangeProduto: (v: string | null) => void;
-  onChangeData: (v: string | null) => void;
+  onChangeAnos: (v: number[]) => void;
+  onChangeMeses: (v: number[]) => void;
   onChangeMarca: (v: string | null) => void;
   onLimpar: () => void;
 }
@@ -24,20 +43,28 @@ interface FiltrosBarProps {
 export default function FiltrosBar({
   opcoes,
   filtroProduto,
-  filtroData,
+  filtroAnos,
+  filtroMeses,
   filtroMarca,
   onChangeProduto,
-  onChangeData,
+  onChangeAnos,
+  onChangeMeses,
   onChangeMarca,
   onLimpar,
 }: FiltrosBarProps) {
-  const temFiltro = Boolean(filtroProduto || filtroData || filtroMarca);
+  const temFiltro = Boolean(
+    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca
+  );
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5, mb: 3 }}>
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={1.5}
+        sx={{ flexWrap: { md: 'wrap' }, rowGap: 1.5 }}
+      >
         <Autocomplete
-          fullWidth
+          sx={{ flex: '2 1 260px' }}
           freeSolo
           options={opcoes.produtos}
           value={filtroProduto}
@@ -63,16 +90,31 @@ export default function FiltrosBar({
           )}
         />
         <Autocomplete
-          fullWidth
-          options={opcoes.datas}
-          value={filtroData}
-          onChange={(_, v) => onChangeData(v)}
+          multiple
+          limitTags={1}
+          options={opcoes.meses}
+          value={filtroMeses}
+          onChange={(_, v) => onChangeMeses(v)}
+          getOptionLabel={rotuloMes}
           renderInput={(params) => (
-            <TextField {...params} label="Data do encarte" size="small" />
+            <TextField {...params} label="Mês do encarte" size="small" />
           )}
+          sx={{ flex: '1 1 190px' }}
         />
         <Autocomplete
-          fullWidth
+          multiple
+          limitTags={1}
+          options={opcoes.anos}
+          value={filtroAnos}
+          onChange={(_, v) => onChangeAnos(v)}
+          getOptionLabel={(ano) => String(ano)}
+          renderInput={(params) => (
+            <TextField {...params} label="Ano do encarte" size="small" />
+          )}
+          sx={{ flex: '0.8 1 130px' }}
+        />
+        <Autocomplete
+          sx={{ flex: '1 1 160px' }}
           options={opcoes.marcas}
           value={filtroMarca}
           onChange={(_, v) => onChangeMarca(v)}

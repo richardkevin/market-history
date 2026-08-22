@@ -29,7 +29,8 @@ export interface Produto {
 
 export interface ProdutoFiltro {
   produto?: string;
-  data_encarte?: string;
+  anos?: number[];
+  meses?: number[];
   marca?: string;
 }
 
@@ -42,9 +43,15 @@ export function buscarProdutos(filtros: ProdutoFiltro = {}): Produto[] {
     query += ' AND produto LIKE ?';
     params.push(`%${filtros.produto}%`);
   }
-  if (filtros.data_encarte) {
-    query += ' AND data_encarte = ?';
-    params.push(filtros.data_encarte);
+  if (filtros.anos?.length) {
+    const placeholders = filtros.anos.map(() => '?').join(', ');
+    query += ` AND CAST(substr(data_encarte, 7, 4) AS INTEGER) IN (${placeholders})`;
+    params.push(...filtros.anos);
+  }
+  if (filtros.meses?.length) {
+    const placeholders = filtros.meses.map(() => '?').join(', ');
+    query += ` AND CAST(substr(data_encarte, 4, 2) AS INTEGER) IN (${placeholders})`;
+    params.push(...filtros.meses);
   }
   if (filtros.marca) {
     query += ' AND marca LIKE ?';
@@ -62,10 +69,32 @@ export function buscarProdutosUnicos(): string[] {
   return rows.map(r => r.produto);
 }
 
-export function buscarDatasEncarte(): string[] {
+export function buscarAnosEncarte(): number[] {
   const db = getDb();
-  const rows = db.prepare('SELECT DISTINCT data_encarte FROM produtos WHERE data_encarte IS NOT NULL ORDER BY data_encarte').all() as { data_encarte: string }[];
-  return rows.map(r => r.data_encarte);
+  const rows = db.prepare(
+    "SELECT DISTINCT CAST(substr(data_encarte, 7, 4) AS INTEGER) AS ano FROM produtos WHERE data_encarte IS NOT NULL ORDER BY ano"
+  ).all() as { ano: number }[];
+  return rows.map(r => r.ano);
+}
+
+export function buscarMesesEncarte(): number[] {
+  const db = getDb();
+  const rows = db.prepare(
+    "SELECT DISTINCT CAST(substr(data_encarte, 4, 2) AS INTEGER) AS mes FROM produtos WHERE data_encarte IS NOT NULL ORDER BY mes"
+  ).all() as { mes: number }[];
+  return rows.map(r => r.mes);
+}
+
+export function buscarUltimaDataEncarte(): string | null {
+  const db = getDb();
+  const row = db.prepare(
+    `SELECT data_encarte FROM produtos
+     WHERE data_encarte IS NOT NULL
+     ORDER BY substr(data_encarte, 7, 4) || '-' || substr(data_encarte, 4, 2) || '-' || substr(data_encarte, 1, 2) DESC
+     LIMIT 1`
+  ).get() as { data_encarte: string } | undefined;
+  if (!row) return null;
+  return row.data_encarte.split(' a ')[0];
 }
 
 export function buscarMarcas(): string[] {

@@ -15,6 +15,8 @@ export interface Produto {
 
 export interface Filtros {
   produtos: string[];
-  datas: string[];
+  anos: number[];
+  meses: number[];
   marcas: string[];
+  ultimaData: string | null;
 }

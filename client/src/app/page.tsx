@@ -28,8 +28,10 @@ export default function Home() {
     filtros,
     filtroProduto,
     setFiltroProduto,
-    filtroData,
-    setFiltroData,
+    filtroAnos,
+    setFiltroAnos,
+    filtroMeses,
+    setFiltroMeses,
     filtroMarca,
     setFiltroMarca,
     carregando,
@@ -78,10 +80,12 @@ export default function Home() {
         <FiltrosBar
           opcoes={filtros}
           filtroProduto={filtroProduto}
-          filtroData={filtroData}
+          filtroAnos={filtroAnos}
+          filtroMeses={filtroMeses}
           filtroMarca={filtroMarca}
           onChangeProduto={setFiltroProduto}
-          onChangeData={setFiltroData}
+          onChangeAnos={setFiltroAnos}
+          onChangeMeses={setFiltroMeses}
           onChangeMarca={setFiltroMarca}
           onLimpar={limparFiltros}
         />
