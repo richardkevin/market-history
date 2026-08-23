@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# banco de dados (symlink para ../encartes_produtos.db)
+encartes_produtos.db
+prezunic_produtos.db

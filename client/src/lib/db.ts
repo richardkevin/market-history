@@ -18,6 +18,7 @@ export interface Produto {
   produto: string;
   marca: string | null;
   medida: string | null;
+  categoria: string | null;
   preco: number | null;
   preco_clube: number | null;
   tipo_promocao: string | null;

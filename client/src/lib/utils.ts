@@ -22,17 +22,17 @@ export const AVATAR_COLORS = ['#16a34a', '#0ea5e9', '#ea580c', '#8b5cf6', '#eab3
 export const CESTA_BASICA = [
   'ARROZ',
   'FEIJÃO',
-  'ÓLEO',
-  'AÇÚCAR',
-  'CAFÉ',
+  'CARNE',
   'LEITE',
   'FARINHA',
-  'MACARRÃO',
-  'SAL',
   'BATATA',
-  'CEBOLA',
-  'ALHO',
   'TOMATE',
+  'PÃO',
+  'CAFÉ',
+  'BANANA',
+  'AÇÚCAR',
+  'ÓLEO',
+  'MANTEIGA',
 ];
 
 export function iniciais(nome: string): string {

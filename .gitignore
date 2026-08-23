@@ -7,3 +7,5 @@ fotos_prezunic/
 encartes_prezunic/
 encartes_guanabara/
 .venv/
+*.db
+*.db-journal
