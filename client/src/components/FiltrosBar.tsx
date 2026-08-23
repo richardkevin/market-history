@@ -10,33 +10,14 @@ import Search from '@mui/icons-material/Search';
 import RestartAlt from '@mui/icons-material/RestartAlt';
 import type { Filtros } from '@/lib/types';
 
-const NOMES_MESES = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
-
-const rotuloMes = (mes: number) => NOMES_MESES[mes - 1] ?? String(mes);
-
 interface FiltrosBarProps {
   opcoes: Filtros;
   filtroProduto: string | null;
   filtroAnos: number[];
-  filtroMeses: number[];
   filtroMarca: string | null;
   filtroCategoria: string | null;
   onChangeProduto: (v: string | null) => void;
   onChangeAnos: (v: number[]) => void;
-  onChangeMeses: (v: number[]) => void;
   onChangeMarca: (v: string | null) => void;
   onChangeCategoria: (v: string | null) => void;
   onLimpar: () => void;
@@ -46,18 +27,16 @@ export default function FiltrosBar({
   opcoes,
   filtroProduto,
   filtroAnos,
-  filtroMeses,
   filtroMarca,
   filtroCategoria,
   onChangeProduto,
   onChangeAnos,
-  onChangeMeses,
   onChangeMarca,
   onChangeCategoria,
   onLimpar,
 }: FiltrosBarProps) {
   const temFiltro = Boolean(
-    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca || filtroCategoria
+    filtroProduto || filtroAnos.length || filtroMarca || filtroCategoria
   );
 
   return (
@@ -92,18 +71,6 @@ export default function FiltrosBar({
               }}
             />
           )}
-        />
-        <Autocomplete
-          multiple
-          limitTags={1}
-          options={opcoes.meses}
-          value={filtroMeses}
-          onChange={(_, v) => onChangeMeses(v)}
-          getOptionLabel={rotuloMes}
-          renderInput={(params) => (
-            <TextField {...params} label="Mês do encarte" size="small" />
-          )}
-          sx={{ flex: '1 1 190px' }}
         />
         <Autocomplete
           multiple

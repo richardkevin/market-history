@@ -1,0 +1,192 @@
+'use client';
+
+import { useMemo } from 'react';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import EChart from '@/components/charts/EChart';
+import { brl, chartCores } from '@/lib/utils';
+import { mediasAnuais, formatarPct } from '@/lib/historico';
+import type { Produto } from '@/lib/types';
+
+interface ChartPrecoAnualProps {
+  nomeProduto: string | null;
+  historico: Produto[];
+  carregando: boolean;
+  escuro: boolean;
+}
+
+export default function ChartPrecoAnual({
+  nomeProduto,
+  historico,
+  carregando,
+  escuro,
+}: ChartPrecoAnualProps) {
+  const anuais = useMemo(() => mediasAnuais(historico), [historico]);
+  const temClube = anuais.some((a) => a.precoClube != null);
+
+  const option = useMemo(() => {
+    if (anuais.length === 0) return null;
+    const cores = escuro ? chartCores.dark : chartCores.light;
+
+    const dadosNormal = anuais.map((a) => ({
+      value: Number(a.preco.toFixed(2)),
+      meta: a,
+    }));
+    const dadosClube = anuais.map((a) => ({
+      value: a.precoClube != null ? Number(a.precoClube.toFixed(2)) : null,
+      meta: a,
+    }));
+
+    const series: Record<string, unknown>[] = [
+      {
+        name: 'Preço médio',
+        type: 'bar',
+        barMaxWidth: 42,
+        data: dadosNormal,
+        itemStyle: { borderRadius: [6, 6, 0, 0], color: escuro ? '#4ade80' : '#16a34a' },
+        label: {
+          show: true,
+          position: 'top' as const,
+          fontSize: 10,
+          color: cores.muted,
+          formatter: ({ value }: { value: number }) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        },
+      },
+    ];
+    if (temClube) {
+      series.push({
+        name: 'Clube (média)',
+        type: 'bar',
+        barMaxWidth: 42,
+        data: dadosClube,
+        itemStyle: {
+          borderRadius: [6, 6, 0, 0],
+          color: escuro ? '#fb923c' : '#ea580c',
+          opacity: 0.85,
+        },
+      });
+    }
+
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis' as const,
+        axisPointer: { type: 'shadow' as const },
+        backgroundColor: cores.tooltipBg,
+        borderWidth: 0,
+        textStyle: { color: cores.text },
+        formatter: (
+          params: {
+            seriesName: string;
+            marker: string;
+            value: number;
+            data: { meta?: (typeof anuais)[number] };
+          }[]
+        ) => {
+          const meta = params[0]?.data?.meta;
+          if (!meta) return '';
+          const idx = anuais.findIndex((a) => a.ano === meta.ano);
+          const anterior = idx > 0 ? anuais[idx - 1] : null;
+          const yoy = anterior ? ((meta.preco - anterior.preco) / anterior.preco) * 100 : null;
+          const linhas = [
+            `<b>${meta.ano}</b>`,
+            `${params[0].marker} Média: <b>${brl.format(meta.preco)}</b>`,
+            `Faixa: ${brl.format(meta.precoMin)} – ${brl.format(meta.precoMax)}`,
+          ];
+          if (meta.precoClube != null) linhas.push(`🧡 Clube: ${brl.format(meta.precoClube)} em média`);
+          if (yoy != null) linhas.push(`${yoy > 0 ? '▲' : yoy < 0 ? '▼' : '='} ${formatarPct(yoy)} vs. ${anterior!.ano}`);
+          linhas.push(`<span style="opacity:.6">${meta.nRegistros} registros</span>`);
+          return linhas.join('<br/>');
+        },
+      },
+      grid: { left: 8, right: 8, top: 28, bottom: 8, containLabel: true },
+      legend: { top: 0, textStyle: { color: cores.muted } },
+      xAxis: {
+        type: 'category' as const,
+        data: anuais.map((a) => String(a.ano)),
+        axisLabel: { color: cores.text, fontSize: 12, fontWeight: 'bold' as const },
+        axisLine: { lineStyle: { color: cores.split } },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: 'value' as const,
+        scale: true,
+        axisLabel: { color: cores.muted, fontSize: 11, formatter: (v: number) => brl.format(v) },
+        splitLine: { lineStyle: { color: cores.split } },
+      },
+      series,
+    };
+  }, [anuais, temClube, escuro]);
+
+  const resumo = useMemo(() => {
+    if (anuais.length < 2) return null;
+    const primeiro = anuais[0];
+    const ultimo = anuais[anuais.length - 1];
+    const anterior = anuais[anuais.length - 2];
+    return {
+      pctTotal: ((ultimo.preco - primeiro.preco) / primeiro.preco) * 100,
+      yoyUltimo: ((ultimo.preco - anterior.preco) / anterior.preco) * 100,
+      anoUltimo: ultimo.ano,
+      anoAnterior: anterior.ano,
+      melhorAno: [...anuais].sort((a, b) => a.preco - b.preco)[0],
+      piorAno: [...anuais].sort((a, b) => b.preco - a.preco)[0],
+      datasCobertas: new Set(
+        historico.map((p) => p.data_encarte?.substring(0, 10)).filter(Boolean)
+      ).size,
+    };
+  }, [anuais, historico]);
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2.5 }}>
+      <Typography variant="h6" gutterBottom>
+        Comparação anual
+      </Typography>
+      {!nomeProduto ? (
+        <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
+          Selecione um produto para comparar os preços médios de cada ano.
+        </Typography>
+      ) : carregando ? (
+        <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
+          Carregando histórico…
+        </Typography>
+      ) : option && resumo ? (
+        <>
+          <Stack direction="row" spacing={0.5} useFlexGap sx={{ mb: 1.5, flexWrap: 'wrap' }}>
+            <Tooltip
+              title={`Preço médio de ${resumo.anoUltimo} vs. ${resumo.anoAnterior}`}
+              placement="top"
+            >
+              <Chip
+                size="small"
+                label={`${formatarPct(resumo.yoyUltimo)} em ${String(resumo.anoUltimo).slice(2)}/${String(resumo.anoAnterior).slice(2)}`}
+                color={resumo.yoyUltimo > 0.5 ? 'error' : resumo.yoyUltimo < -0.5 ? 'success' : 'default'}
+                variant={Math.abs(resumo.yoyUltimo) > 0.5 ? 'filled' : 'outlined'}
+              />
+            </Tooltip>
+            <Tooltip title="Variação acumulada do primeiro ao último ano" placement="top">
+              <Chip
+                size="small"
+                variant="outlined"
+                label={`${formatarPct(resumo.pctTotal)} no total`}
+              />
+            </Tooltip>
+            <Tooltip title="Ano com menor preço médio" placement="top">
+              <Chip size="small" variant="outlined" label={`mais barato: ${resumo.melhorAno.ano}`} />
+            </Tooltip>
+            <Tooltip title="Ano com maior preço médio" placement="top">
+              <Chip size="small" variant="outlined" label={`mais caro: ${resumo.piorAno.ano}`} />
+            </Tooltip>
+          </Stack>
+          <EChart option={option} height={360} loading={false} />
+        </>
+      ) : (
+        <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
+          Sem preços registrados para este produto.
+        </Typography>
+      )}
+    </Paper>
+  );
+}

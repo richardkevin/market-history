@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { CESTA_BASICA } from '@/lib/utils';
+import { variacoesDesdeUltimoEncarte } from '@/lib/historico';
 import type { Produto, Filtros } from '@/lib/types';
 
 export function useProdutos() {
@@ -10,14 +10,12 @@ export function useProdutos() {
   const [filtros, setFiltros] = useState<Filtros>({
     produtos: [],
     anos: [],
-    meses: [],
     marcas: [],
     categorias: [],
     ultimaData: null,
   });
   const [filtroProduto, setFiltroProduto] = useState<string | null>(null);
   const [filtroAnos, setFiltroAnos] = useState<number[]>([]);
-  const [filtroMeses, setFiltroMeses] = useState<number[]>([]);
   const [filtroMarca, setFiltroMarca] = useState<string | null>(null);
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -47,7 +45,6 @@ export function useProdutos() {
       const params = new URLSearchParams();
       if (filtroProduto) params.set('produto', filtroProduto);
       if (filtroAnos.length) params.set('anos', filtroAnos.join(','));
-      if (filtroMeses.length) params.set('meses', filtroMeses.join(','));
       if (filtroMarca) params.set('marca', filtroMarca);
       if (filtroCategoria) params.set('categoria', filtroCategoria);
 
@@ -62,64 +59,40 @@ export function useProdutos() {
     return () => {
       vigente = false;
     };
-  }, [filtroProduto, filtroAnos, filtroMeses, filtroMarca, filtroCategoria]);
-
-  const temFiltro = Boolean(
-    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca || filtroCategoria
-  );
+  }, [filtroProduto, filtroAnos, filtroMarca, filtroCategoria]);
 
   const limparFiltros = () => {
     setFiltroProduto(null);
     setFiltroAnos([]);
-    setFiltroMeses([]);
     setFiltroMarca(null);
     setFiltroCategoria(null);
   };
 
-  const produtosCestaBasica = useMemo(
+  const variacoes = useMemo(
     () =>
-      produtosCesta.filter((p) =>
-        CESTA_BASICA.some((item) => p.produto.toUpperCase().includes(item))
-      ),
-    [produtosCesta]
+      carregandoCesta
+        ? []
+        : variacoesDesdeUltimoEncarte(produtosCesta),
+    [produtosCesta, carregandoCesta]
   );
-
-  const totalEconomia = useMemo(
-    () =>
-      produtos.reduce(
-        (acc, p) =>
-          acc + (p.preco && p.preco_clube && p.preco_clube < p.preco ? p.preco - p.preco_clube : 0),
-        0
-      ),
-    [produtos]
-  );
-
-  const totalComPreco = produtos.filter((p) => p.preco).length;
-  const precoMedio =
-    produtos.reduce((acc, p) => acc + (p.preco || 0), 0) / (totalComPreco || 1);
-  const ultimaData = filtros.ultimaData;
 
   return {
     produtos,
-    produtosCestaBasica,
+    produtosCesta,
+    variacoes,
     filtros,
     filtroProduto,
     setFiltroProduto,
     filtroAnos,
     setFiltroAnos,
-    filtroMeses,
-    setFiltroMeses,
     filtroMarca,
     setFiltroMarca,
     filtroCategoria,
     setFiltroCategoria,
     carregando,
     carregandoCesta,
-    temFiltro,
+    temFiltro: Boolean(filtroProduto || filtroAnos.length || filtroMarca || filtroCategoria),
     limparFiltros,
-    totalComPreco,
-    precoMedio,
-    totalEconomia,
-    ultimaData,
+    ultimaData: filtros.ultimaData,
   };
 }

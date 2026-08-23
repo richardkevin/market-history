@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { useColorScheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
@@ -12,27 +13,33 @@ import AppHeader from '@/components/AppHeader';
 import FiltrosBar from '@/components/FiltrosBar';
 import KpiCards from '@/components/KpiCards';
 import ProdutosTable from '@/components/ProdutosTable';
-import ChartPrecoProduto from '@/components/charts/ChartPrecoProduto';
-import ChartEconomia from '@/components/charts/ChartEconomia';
-import ChartCategoria from '@/components/charts/ChartCategoria';
+import CardsDestaque from '@/components/CardsDestaque';
+import TabelaVariacao from '@/components/TabelaVariacao';
+import ChartPrecoLinha from '@/components/charts/ChartPrecoLinha';
+import ChartPrecoAnual from '@/components/charts/ChartPrecoAnual';
 import ChartCestaBasica from '@/components/charts/ChartCestaBasica';
+import ChartIndiceCesta from '@/components/charts/ChartIndiceCesta';
+import ChartHeatmapCategoria from '@/components/charts/ChartHeatmapCategoria';
+import { CESTA_BASICA } from '@/lib/utils';
 import { useProdutos } from '@/hooks/useProdutos';
+import { useHistoricoProduto } from '@/hooks/useHistoricoProduto';
 
 export default function Home() {
   const { mode, systemMode } = useColorScheme();
   const modoResolvido = mode === 'system' || mode == null ? systemMode : mode;
   const escuro = modoResolvido === 'dark';
 
+  const [produtoSelecionado, setProdutoSelecionado] = useState<string | null>(null);
+
   const {
     produtos,
-    produtosCestaBasica,
+    produtosCesta,
+    variacoes,
     filtros,
     filtroProduto,
     setFiltroProduto,
     filtroAnos,
     setFiltroAnos,
-    filtroMeses,
-    setFiltroMeses,
     filtroMarca,
     setFiltroMarca,
     filtroCategoria,
@@ -40,11 +47,19 @@ export default function Home() {
     carregando,
     carregandoCesta,
     limparFiltros,
-    totalComPreco,
-    precoMedio,
-    totalEconomia,
     ultimaData,
   } = useProdutos();
+
+  const { historico, carregando: carregandoHistorico } =
+    useHistoricoProduto(produtoSelecionado);
+
+  const itensCestaBasica = useMemo(
+    () =>
+      produtosCesta.filter((p) =>
+        CESTA_BASICA.some((t) => p.produto.toUpperCase().includes(t))
+      ),
+    [produtosCesta]
+  );
 
   return (
     <Box sx={{ minHeight: '100dvh' }}>
@@ -71,44 +86,77 @@ export default function Home() {
           )}
         </Stack>
 
-        <KpiCards
-          carregando={carregando}
-          totalProdutos={produtos.length}
-          precoMedio={precoMedio}
-          totalComPreco={totalComPreco}
-          economia={totalEconomia}
-          itensCesta={produtosCestaBasica.length}
-        />
+        <KpiCards carregando={carregando} totalProdutos={produtos.length} />
 
         <FiltrosBar
           opcoes={filtros}
           filtroProduto={filtroProduto}
           filtroAnos={filtroAnos}
-          filtroMeses={filtroMeses}
           filtroMarca={filtroMarca}
           filtroCategoria={filtroCategoria}
           onChangeProduto={setFiltroProduto}
           onChangeAnos={setFiltroAnos}
-          onChangeMeses={setFiltroMeses}
           onChangeMarca={setFiltroMarca}
           onChangeCategoria={setFiltroCategoria}
           onLimpar={limparFiltros}
         />
 
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <ChartPrecoProduto produtos={produtos} escuro={escuro} carregando={carregando} />
+        <Stack spacing={2} sx={{ mb: 3 }}>
+          <CardsDestaque
+            variacoes={variacoes}
+            carregando={carregandoCesta}
+            onSelecionarProduto={setProdutoSelecionado}
+          />
+
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, lg: 7 }}>
+              <ChartPrecoLinha
+                produtoSelecionado={produtoSelecionado}
+                onSelecionarProduto={setProdutoSelecionado}
+                historico={historico}
+                carregandoHistorico={carregandoHistorico}
+                escuro={escuro}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, lg: 5 }}>
+              <ChartPrecoAnual
+                nomeProduto={produtoSelecionado}
+                historico={historico}
+                carregando={carregandoHistorico}
+                escuro={escuro}
+              />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12, md: 5 }}>
-            <ChartEconomia produtos={produtos} escuro={escuro} carregando={carregando} />
+
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, lg: 5 }}>
+              <ChartIndiceCesta
+                produtos={produtosCesta}
+                escuro={escuro}
+                carregando={carregandoCesta}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, lg: 7 }}>
+              <ChartCestaBasica
+                itens={itensCestaBasica}
+                escuro={escuro}
+                carregando={carregandoCesta}
+              />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <ChartCategoria produtos={produtos} escuro={escuro} carregando={carregando} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <ChartCestaBasica itens={produtosCestaBasica} escuro={escuro} carregando={carregandoCesta} />
-          </Grid>
-        </Grid>
+
+          <ChartHeatmapCategoria
+            produtos={produtosCesta}
+            escuro={escuro}
+            carregando={carregandoCesta}
+          />
+
+          <TabelaVariacao
+            variacoes={variacoes}
+            carregando={carregandoCesta}
+            onSelecionarProduto={setProdutoSelecionado}
+          />
+        </Stack>
 
         <ProdutosTable produtos={produtos} carregando={carregando} onLimparFiltros={limparFiltros} />
       </Container>

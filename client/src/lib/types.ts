@@ -11,13 +11,13 @@ export interface Produto {
   limite: string | null;
   data_encarte: string | null;
   observacao: string | null;
+  erro_identificacao?: number;
   created_at: string;
 }
 
 export interface Filtros {
   produtos: string[];
   anos: number[];
-  meses: number[];
   marcas: string[];
   categorias: string[];
   ultimaData: string | null;

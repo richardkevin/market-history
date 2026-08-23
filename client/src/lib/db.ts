@@ -31,7 +31,6 @@ export interface Produto {
 export interface ProdutoFiltro {
   produto?: string;
   anos?: number[];
-  meses?: number[];
   marca?: string;
   categoria?: string;
 }
@@ -49,11 +48,6 @@ export function buscarProdutos(filtros: ProdutoFiltro = {}): Produto[] {
     const placeholders = filtros.anos.map(() => '?').join(', ');
     query += ` AND CAST(substr(data_encarte, 7, 4) AS INTEGER) IN (${placeholders})`;
     params.push(...filtros.anos);
-  }
-  if (filtros.meses?.length) {
-    const placeholders = filtros.meses.map(() => '?').join(', ');
-    query += ` AND CAST(substr(data_encarte, 4, 2) AS INTEGER) IN (${placeholders})`;
-    params.push(...filtros.meses);
   }
   if (filtros.marca) {
     query += ' AND marca LIKE ?';
@@ -81,14 +75,6 @@ export function buscarAnosEncarte(): number[] {
     "SELECT DISTINCT CAST(substr(data_encarte, 7, 4) AS INTEGER) AS ano FROM produtos WHERE data_encarte IS NOT NULL ORDER BY ano"
   ).all() as { ano: number }[];
   return rows.map(r => r.ano);
-}
-
-export function buscarMesesEncarte(): number[] {
-  const db = getDb();
-  const rows = db.prepare(
-    "SELECT DISTINCT CAST(substr(data_encarte, 4, 2) AS INTEGER) AS mes FROM produtos WHERE data_encarte IS NOT NULL ORDER BY mes"
-  ).all() as { mes: number }[];
-  return rows.map(r => r.mes);
 }
 
 export function buscarUltimaDataEncarte(): string | null {
@@ -120,4 +106,27 @@ export function buscarHistoricoPreco(nomeProduto: string): Produto[] {
   return db.prepare(
     'SELECT * FROM produtos WHERE produto LIKE ? ORDER BY created_at ASC'
   ).all(`%${nomeProduto}%`) as Produto[];
+}
+
+export function buscarHistoricoProdutoExato(nomeProduto: string): Produto[] {
+  const db = getDb();
+  return db.prepare(
+    'SELECT * FROM produtos WHERE produto = ? ORDER BY created_at ASC'
+  ).all(nomeProduto) as Produto[];
+}
+
+export interface SugeridoComContagem {
+  produto: string;
+  registros: number;
+}
+
+/** Produtos com mais registros históricos — candidatos padrão do gráfico de linha. */
+export function produtosMaisRegistrados(limite = 30): SugeridoComContagem[] {
+  const db = getDb();
+  return db.prepare(
+    `SELECT produto, COUNT(*) AS registros FROM produtos
+     WHERE produto IS NOT NULL AND preco IS NOT NULL AND erro_identificacao = 0
+     GROUP BY produto HAVING COUNT(DISTINCT data_encarte) >= 2
+     ORDER BY registros DESC LIMIT ?`
+  ).all(limite) as SugeridoComContagem[];
 }

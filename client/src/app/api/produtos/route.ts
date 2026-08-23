@@ -3,10 +3,11 @@ import {
   buscarProdutos,
   buscarProdutosUnicos,
   buscarAnosEncarte,
-  buscarMesesEncarte,
   buscarUltimaDataEncarte,
   buscarMarcas,
   buscarCategorias,
+  buscarHistoricoProdutoExato,
+  produtosMaisRegistrados,
 } from '@/lib/db';
 
 function parseListaNumeros(valor: string | null): number[] | undefined {
@@ -23,7 +24,6 @@ export async function GET(request: NextRequest) {
 
   const produto = searchParams.get('produto') || undefined;
   const anos = parseListaNumeros(searchParams.get('anos'));
-  const meses = parseListaNumeros(searchParams.get('meses'));
   const marca = searchParams.get('marca') || undefined;
   const categoria = searchParams.get('categoria') || undefined;
   const action = searchParams.get('action') || 'produtos';
@@ -34,15 +34,22 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           produtos: buscarProdutosUnicos(),
           anos: buscarAnosEncarte(),
-          meses: buscarMesesEncarte(),
           marcas: buscarMarcas(),
           categorias: buscarCategorias(),
           ultimaData: buscarUltimaDataEncarte(),
         });
+      case 'historico-produto': {
+        if (!produto) {
+          return NextResponse.json({ error: 'produto é obrigatório' }, { status: 400 });
+        }
+        return NextResponse.json(buscarHistoricoProdutoExato(produto));
+      }
+      case 'produtos-populares':
+        return NextResponse.json(produtosMaisRegistrados());
       case 'produtos':
       default:
         return NextResponse.json(
-          buscarProdutos({ produto, anos, meses, marca, categoria })
+          buscarProdutos({ produto, anos, marca, categoria })
         );
     }
   } catch (error) {
