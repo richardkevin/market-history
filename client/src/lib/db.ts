@@ -33,6 +33,7 @@ export interface ProdutoFiltro {
   anos?: number[];
   meses?: number[];
   marca?: string;
+  categoria?: string;
 }
 
 export function buscarProdutos(filtros: ProdutoFiltro = {}): Produto[] {
@@ -57,6 +58,10 @@ export function buscarProdutos(filtros: ProdutoFiltro = {}): Produto[] {
   if (filtros.marca) {
     query += ' AND marca LIKE ?';
     params.push(`%${filtros.marca}%`);
+  }
+  if (filtros.categoria) {
+    query += ' AND categoria = ?';
+    params.push(filtros.categoria);
   }
 
   query += ' ORDER BY created_at DESC';
@@ -102,6 +107,12 @@ export function buscarMarcas(): string[] {
   const db = getDb();
   const rows = db.prepare('SELECT DISTINCT marca FROM produtos WHERE marca IS NOT NULL ORDER BY marca').all() as { marca: string }[];
   return rows.map(r => r.marca);
+}
+
+export function buscarCategorias(): string[] {
+  const db = getDb();
+  const rows = db.prepare('SELECT DISTINCT categoria FROM produtos WHERE categoria IS NOT NULL ORDER BY categoria').all() as { categoria: string }[];
+  return rows.map(r => r.categoria);
 }
 
 export function buscarHistoricoPreco(nomeProduto: string): Produto[] {

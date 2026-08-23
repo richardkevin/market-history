@@ -19,5 +19,6 @@ export interface Filtros {
   anos: number[];
   meses: number[];
   marcas: string[];
+  categorias: string[];
   ultimaData: string | null;
 }

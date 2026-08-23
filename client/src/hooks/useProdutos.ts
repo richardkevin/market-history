@@ -12,12 +12,14 @@ export function useProdutos() {
     anos: [],
     meses: [],
     marcas: [],
+    categorias: [],
     ultimaData: null,
   });
   const [filtroProduto, setFiltroProduto] = useState<string | null>(null);
   const [filtroAnos, setFiltroAnos] = useState<number[]>([]);
   const [filtroMeses, setFiltroMeses] = useState<number[]>([]);
   const [filtroMarca, setFiltroMarca] = useState<string | null>(null);
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [carregandoCesta, setCarregandoCesta] = useState(true);
 
@@ -47,6 +49,7 @@ export function useProdutos() {
       if (filtroAnos.length) params.set('anos', filtroAnos.join(','));
       if (filtroMeses.length) params.set('meses', filtroMeses.join(','));
       if (filtroMarca) params.set('marca', filtroMarca);
+      if (filtroCategoria) params.set('categoria', filtroCategoria);
 
       const res = await fetch(`/api/produtos?${params.toString()}`);
       const data = await res.json();
@@ -59,10 +62,10 @@ export function useProdutos() {
     return () => {
       vigente = false;
     };
-  }, [filtroProduto, filtroAnos, filtroMeses, filtroMarca]);
+  }, [filtroProduto, filtroAnos, filtroMeses, filtroMarca, filtroCategoria]);
 
   const temFiltro = Boolean(
-    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca
+    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca || filtroCategoria
   );
 
   const limparFiltros = () => {
@@ -70,6 +73,7 @@ export function useProdutos() {
     setFiltroAnos([]);
     setFiltroMeses([]);
     setFiltroMarca(null);
+    setFiltroCategoria(null);
   };
 
   const produtosCestaBasica = useMemo(
@@ -107,6 +111,8 @@ export function useProdutos() {
     setFiltroMeses,
     filtroMarca,
     setFiltroMarca,
+    filtroCategoria,
+    setFiltroCategoria,
     carregando,
     carregandoCesta,
     temFiltro,

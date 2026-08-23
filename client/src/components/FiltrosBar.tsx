@@ -33,10 +33,12 @@ interface FiltrosBarProps {
   filtroAnos: number[];
   filtroMeses: number[];
   filtroMarca: string | null;
+  filtroCategoria: string | null;
   onChangeProduto: (v: string | null) => void;
   onChangeAnos: (v: number[]) => void;
   onChangeMeses: (v: number[]) => void;
   onChangeMarca: (v: string | null) => void;
+  onChangeCategoria: (v: string | null) => void;
   onLimpar: () => void;
 }
 
@@ -46,14 +48,16 @@ export default function FiltrosBar({
   filtroAnos,
   filtroMeses,
   filtroMarca,
+  filtroCategoria,
   onChangeProduto,
   onChangeAnos,
   onChangeMeses,
   onChangeMarca,
+  onChangeCategoria,
   onLimpar,
 }: FiltrosBarProps) {
   const temFiltro = Boolean(
-    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca
+    filtroProduto || filtroAnos.length || filtroMeses.length || filtroMarca || filtroCategoria
   );
 
   return (
@@ -119,6 +123,13 @@ export default function FiltrosBar({
           value={filtroMarca}
           onChange={(_, v) => onChangeMarca(v)}
           renderInput={(params) => <TextField {...params} label="Marca" size="small" />}
+        />
+        <Autocomplete
+          sx={{ flex: '1 1 180px' }}
+          options={opcoes.categorias}
+          value={filtroCategoria}
+          onChange={(_, v) => onChangeCategoria(v)}
+          renderInput={(params) => <TextField {...params} label="Categoria" size="small" />}
         />
         <Button
           onClick={onLimpar}

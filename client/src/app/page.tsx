@@ -14,6 +14,7 @@ import KpiCards from '@/components/KpiCards';
 import ProdutosTable from '@/components/ProdutosTable';
 import ChartPrecoProduto from '@/components/charts/ChartPrecoProduto';
 import ChartEconomia from '@/components/charts/ChartEconomia';
+import ChartCategoria from '@/components/charts/ChartCategoria';
 import ChartCestaBasica from '@/components/charts/ChartCestaBasica';
 import { useProdutos } from '@/hooks/useProdutos';
 
@@ -34,6 +35,8 @@ export default function Home() {
     setFiltroMeses,
     filtroMarca,
     setFiltroMarca,
+    filtroCategoria,
+    setFiltroCategoria,
     carregando,
     carregandoCesta,
     limparFiltros,
@@ -83,10 +86,12 @@ export default function Home() {
           filtroAnos={filtroAnos}
           filtroMeses={filtroMeses}
           filtroMarca={filtroMarca}
+          filtroCategoria={filtroCategoria}
           onChangeProduto={setFiltroProduto}
           onChangeAnos={setFiltroAnos}
           onChangeMeses={setFiltroMeses}
           onChangeMarca={setFiltroMarca}
+          onChangeCategoria={setFiltroCategoria}
           onLimpar={limparFiltros}
         />
 
@@ -97,7 +102,10 @@ export default function Home() {
           <Grid size={{ xs: 12, md: 5 }}>
             <ChartEconomia produtos={produtos} escuro={escuro} carregando={carregando} />
           </Grid>
-          <Grid size={{ xs: 12 }}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <ChartCategoria produtos={produtos} escuro={escuro} carregando={carregando} />
+          </Grid>
+          <Grid size={{ xs: 12, md: 8 }}>
             <ChartCestaBasica itens={produtosCestaBasica} escuro={escuro} carregando={carregandoCesta} />
           </Grid>
         </Grid>
