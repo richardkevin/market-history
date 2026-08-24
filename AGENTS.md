@@ -2,39 +2,41 @@
 
 ## Project Overview
 
-Brazilian supermarket flyer (encarte) image OCR pipeline. Scrapes images from Prezunic's Facebook and website, extracts product names + prices via OCR, stores in SQLite.
+Pipeline that scrapes Brazilian supermarket flyer (encarte) images (Prezunic + Guanabara), extracts product names/brands/prices via OCR or Gemini, and normalizes them into SQLite. A Next.js app (`client/`) reads the same SQLite DB and renders charts.
 
-## Key Scripts
+## Layout
 
-- **`ler_produtos_gemini.py`** — Multimodal extraction with Google Gemini (Pydantic structured output: product, brand, measure, normal price, club price, promotion, limit). Run: `source .venv/bin/activate && python ler_produtos_gemini.py [imagem]`
-- **`ler_produtos_easyocr.py`** — EasyOCR pipeline with GPU (MPS on Mac). Content-based classification, column detection, price pairing. Run: `source .venv/bin/activate && python ler_produtos_easyocr.py`
-- **`baixar_encartes.py`** — Downloads PDFs + cover images from prezunic.com.br/encartes (no dependencies beyond stdlib)
-- **`baixar_fotos_facebook.py`** — Playwright script for Facebook photos. Requires manual login prompt.
-- **`ler_produtos.py`** / **`ler_produtos_vision.py`** — Older approaches (pytesseract, Google Vision). Not actively used.
+- **Repo root**: Python data pipeline. `encartes_prezunic/` + `encartes_guanabara/` hold the image files (gitignored).
+- **`client/`**: standalone Next.js 16 (React 19, MUI 9, ECharts 6, better-sqlite3). `npm` — not part of the uv/venv tooling.
 
-## Environment
+## Python pipeline
 
-- Virtualenv at `.venv` (created via uv)
-- GPU acceleration: MPS on Mac, EasyOCR `gpu=True`
-- Database: `prezunic_produtos.db` (gitignored). Schema: `produtos` table with `id, imagem, produto, preco, preco_clube, data_encarte, texto_ocr, erro_identificacao, created_at`
-- Debug images: `debug_*.png` (grid, ilhas, regioes, blocos)
+- Env: `source .venv/bin/activate` (uv, `requires-python >=3.14`, `Pillow`, `opencv-python-headless`, `easyocr`, `playwright`, `google-genai`).
+- Active extractors (all write to **`encartes_produtos.db`**) — run with an image arg:
+  - `ler_produtos_gemini.py` — Gemini Vision, Pydantic output (produto, marca, medida, preço, preço_clube, tipo_promo, limite, observacao). Reads key from `GEMINI_API_KEY` (or `MERCADO_GEMINI_API_KEY`). Needs network.
+  - `ler_produtos_guanabara.py` / `ler_produtos_mimo.py` — Guanabara / opencode-API extraction.
+  - `ler_produtos_easyocr.py` — EasyOCR, `gpu=True` (MPS on Mac). **Still writes to legacy `prezunic_produtos.db`** — do not point the client at it.
+  - `ler_produtos.py`, `ler_produtos_vision.py` — older approaches, unused.
+- Downloaders: `baixar_encartes.py` (Prezunic site, stdlib only), `baixar_fotos_facebook.py` (Playwright, manual login), `baixar_guanabara_site.py` / `_scribd.py` / `_historico.py`.
+- Data ops (idempotent, run against `encartes_produtos.db`):
+  - `migrar_categorias.py` — adds/rebuilds the `categoria` column by keyword rules (first matching rule wins). Rerun after editing rules.
+  - `normalizar_produtos.py` — de-dupes/fixes product + brand names. **Backs up the DB first** (`.backup.db`).
+  - `dedup_ocr_guanabara.py` — dedup OCR cache.
 
-## Architecture Notes
+## Client (`client/`)
 
-- Prezunic uses VTEX e-commerce; encarte data embedded as JSON in page HTML
-- Facebook images are 414x414 thumbnails — poor OCR quality. Full-page encartes (e.g. `prezunic190826.webp` 1550x4093) have many products
-- Product detection uses content-based classification (`eh_texto_lixo`, `eh_banner`, `eh_produto_valido`, `extrair_produto_linha`)
-- Column-based pairing (`detectar_colunas` / `encontrar_coluna`) for matching products to prices
-- `erro_identificacao` flag marks records needing manual review
+- Read-only SQLite via better-sqlite3 (`readonly: true`). `db.ts` reads `process.cwd()/encartes_produtos.db`.
+- **Critical gotcha**: `process.cwd()` in `next dev`/runtime resolves to `client/`. A symlink `client/encartes_produtos.db -> ../encartes_produtos.db` must exist, or queries silently return nothing. (`/api/imagem` instead reaches root via `path.join(process.cwd(), '..', dir, file)`.)
+- `buscarProdutos()` always filters `erro_identificacao = 0`.
+- Image serving: `/api/imagem?arquivo=<name>` (upstream dir auto-picked, blocked from path traversal). IPCA: `/api/ipca` (BCB external, cached 24h).
+- Commands: `npm run dev` | `build` | `start` | `lint`. No test framework. Verify with `npm run build` (runs TypeScript) + `npm run lint`.
 
-## Active Development
+## Conventions / gotchas
 
-Working on OpenCV-based region detection to isolate product cards before OCR. Approaches tried: grid detection (72 cells, too many), white-block detection (5 blocks, too few), Canny edges (44 fragmented islands). Current best: fixed 3-column grid with EasyOCR per cell.
-
-## Gotchas
-
-- `preco_clube` = Clube Prezunic discounted price
-- `eh_medida()` must not misclassify prices like "19,98" (2 decimal places = price, not measure)
-- Brand names like `seara`, `sadia`, `garoto` are valid products, not garbage
-- OCR garbage patterns accumulated in `lixo_ocr` set — keep adding new ones as discovered
-- Many product names start lowercase ("azeite de oliva") — `extrair_produto_linha()` handles this
+- `preco_clube` = Clube Prezunic discounted price.
+- `erro_identificacao = 1` marks records needing manual review — excluded from the app.
+- `supermercado` column (`prezunic` | `guanabara`) distinguishes the two sources.
+- `eh_medida()` must not classify prices like `19,98` (2 decimals = price, not measure).
+- Brand names like `seara`, `sadia`, `garoto` are valid products, not OCR garbage.
+- Keep adding garbage patterns to `lixo_ocr`; many product names start lowercase.
+- Client `client/AGENTS.md` is auto-generated by `next dev` (Next.js 16 has breaking changes vs training data — read `node_modules/next/dist/docs/` before writing Next code; don't delete the block).
