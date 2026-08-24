@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import EChart from '@/components/charts/EChart';
 import InfoTitulo from '@/components/InfoTitulo';
 import { brl, chartCores } from '@/lib/utils';
-import { dataReferencia, chaveMes, grupoCesta, rotuloPeriodo, formatarPct, precosGruposCesta } from '@/lib/historico';
+import { dataReferencia, chaveMes, grupoCesta, rotuloPeriodo, formatarPct, precosGruposCesta, precosGruposSelecao } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartCestaBasicaProps {
@@ -28,7 +28,12 @@ interface VarGrupo {
 export function variacaoMensalGrupo(itens: Produto[], grupoAlvo: string): VarGrupo {
   const medias = new Map<string, Map<string, { t: number; preco: number }>>();
   for (const p of itens) {
-    if (!p.produto || p.preco == null || grupoCesta(p.produto) !== grupoAlvo) continue;
+    if (
+      !p.produto ||
+      p.preco == null ||
+      (grupoCesta(p.produto) !== grupoAlvo && p.produto !== grupoAlvo)
+    )
+      continue;
     const d = dataReferencia(p);
     if (!d) continue;
     const mes = chaveMes(d);
@@ -56,7 +61,12 @@ export function variacaoMensalGrupo(itens: Produto[], grupoAlvo: string): VarGru
 }
 
 export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCestaBasicaProps) {
-  const grupos = useMemo(() => precosGruposCesta(itens), [itens]);
+  const gruposCesta = useMemo(() => precosGruposCesta(itens), [itens]);
+  const modoSelecao = gruposCesta.length === 0 && itens.length > 0;
+  const grupos = useMemo(
+    () => (modoSelecao ? precosGruposSelecao(itens).slice(0, 16) : gruposCesta),
+    [modoSelecao, itens, gruposCesta]
+  );
   const nGrupos = grupos.length;
 
   const variacoes = useMemo(() => {
@@ -112,7 +122,7 @@ export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCes
       },
       yAxis: {
         type: 'category' as const,
-        data: ordenados.map((g) => `${g.grupo} (${g.nProdutos})`),
+        data: ordenados.map((g) => (modoSelecao ? g.grupo : `${g.grupo} (${g.nProdutos})`)),
         axisLabel: { color: cores.text, fontSize: 11 },
         axisLine: { show: false },
         axisTick: { show: false },
@@ -147,17 +157,21 @@ export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCes
         },
       ],
     };
-  }, [grupos, variacoes, escuro]);
+  }, [grupos, variacoes, escuro, modoSelecao]);
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5 }}>
       <InfoTitulo
-        titulo="Cesta básica · preço médio por grupo"
-        descricao="Itens similares são agrupados (ex.: todos os arrozes viram “ARROZ”) e o valor é a média do preço mais recente de cada produto do grupo. O número ao lado do grupo indica quantos produtos entraram na média; ▲/▼ é a variação da média mensal do grupo vs. mês anterior."
+        titulo={modoSelecao ? 'Produtos selecionados · preço médio' : 'Cesta básica · preço médio por grupo'}
+        descricao={
+          modoSelecao
+            ? 'Preço do registro mais recente de cada produto marcado na tabela. ▲/▼ é a variação da média mensal vs. mês anterior.'
+            : 'Itens similares são agrupados (ex.: todos os arrozes viram “ARROZ”) e o valor é a média do preço mais recente de cada produto do grupo. O número ao lado do grupo indica quantos produtos entraram na média; ▲/▼ é a variação da média mensal do grupo vs. mês anterior.'
+        }
       />
       {!option && !carregando ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
-          Nenhum item da cesta básica encontrado.
+          {modoSelecao ? 'Nenhum preço registrado para os itens selecionados.' : 'Nenhum item da cesta básica encontrado.'}
         </Typography>
       ) : (
         <EChart option={option ?? {}} height={Math.max(300, nGrupos * 26)} loading={carregando} />

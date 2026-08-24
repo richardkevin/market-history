@@ -18,6 +18,8 @@ interface ChartPrecoAnualProps {
   carregando: boolean;
   /** base completa para o modo default (cesta básica) */
   produtosCesta: Produto[];
+  /** true quando há itens marcados na tabela — usa todos, sem filtrar pela cesta */
+  modoSelecao?: boolean;
   escuro: boolean;
 }
 
@@ -26,6 +28,7 @@ export default function ChartPrecoAnual({
   historico,
   carregando,
   produtosCesta,
+  modoSelecao = false,
   escuro,
 }: ChartPrecoAnualProps) {
   const modoCesta = nomeProduto == null;
@@ -33,19 +36,23 @@ export default function ChartPrecoAnual({
   const anuais = useMemo(() => {
     if (modoCesta) {
       return mediasAnuais(
-        produtosCesta.filter((p) => grupoCesta(p.produto)),
+        produtosCesta.filter((p) => modoSelecao || grupoCesta(p.produto)),
         { porUnidade: true }
       );
     }
     return mediasAnuais(historico);
-  }, [modoCesta, produtosCesta, historico]);
+  }, [modoCesta, modoSelecao, produtosCesta, historico]);
 
   const temClube = anuais.some((a) => a.precoClube != null);
 
   const option = useMemo(() => {
     if (anuais.length === 0) return null;
     const cores = escuro ? chartCores.dark : chartCores.light;
-    const nomeSerieNormal = modoCesta ? 'Cesta básica (média R$/kg·L·un)' : 'Preço médio';
+    const nomeSerieNormal = modoCesta
+      ? modoSelecao
+        ? 'Seleção (média R$/kg·L·un)'
+        : 'Cesta básica (média R$/kg·L·un)'
+      : 'Preço médio';
 
     const dadosNormal = anuais.map((a) => ({
       value: Number(a.preco.toFixed(2)),
@@ -142,7 +149,7 @@ export default function ChartPrecoAnual({
       },
       series,
     };
-  }, [anuais, temClube, escuro, modoCesta]);
+  }, [anuais, temClube, escuro, modoCesta, modoSelecao]);
 
   const resumo = useMemo(() => {
     if (anuais.length < 2) return null;
@@ -163,11 +170,13 @@ export default function ChartPrecoAnual({
     <Paper variant="outlined" sx={{ p: 2.5 }}>
       <InfoTitulo
         titulo="Comparação anual"
-        descricao={
-          modoCesta
-            ? 'Média por unidade (R$/kg·L·un) dos grupos da cesta básica em cada ano — mostra o ano em que o carrinho estava, em média, mais barato ou caro.'
-            : 'Preço médio do produto selecionado em cada ano-calendário. O tooltip traz a faixa mín–máx do período e a variação vs. o ano anterior.'
-        }
+      descricao={
+        modoCesta
+          ? modoSelecao
+            ? 'Média por unidade (R$/kg·L·un) dos produtos marcados na tabela em cada ano — mostra o ano em que estiveram, em média, mais baratos ou caros.'
+            : 'Média por unidade (R$/kg·L·un) dos grupos da cesta básica em cada ano — mostra o ano em que o carrinho estava, em média, mais barato ou caro.'
+          : 'Preço médio do produto selecionado em cada ano-calendário. O tooltip traz a faixa mín–máx do período e a variação vs. o ano anterior.'
+      }
       />
       {carregando && !modoCesta ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>

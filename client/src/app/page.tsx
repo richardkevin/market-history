@@ -5,11 +5,8 @@ import { useColorScheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
-import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import CalendarMonth from '@mui/icons-material/CalendarMonth';
-import AppHeader from '@/components/AppHeader';
 import FiltrosBar from '@/components/FiltrosBar';
 import KpiCards from '@/components/KpiCards';
 import ProdutosTable from '@/components/ProdutosTable';
@@ -50,7 +47,6 @@ export default function Home() {
     carregando,
     carregandoCesta,
     limparFiltros,
-    ultimaData,
     graficosSelecionados,
     alternarGraficoSelecionado,
     produtosSelecionados,
@@ -130,6 +126,7 @@ export default function Home() {
                 historico={historico}
                 carregandoHistorico={carregandoHistorico}
                 produtosCesta={produtosGrafico}
+                modoSelecao={graficosSelecionados.length > 0}
                 escuro={escuro}
               />
             </Grid>
@@ -139,6 +136,7 @@ export default function Home() {
                 historico={historico}
                 carregando={carregandoHistorico}
                 produtosCesta={produtosGrafico}
+                modoSelecao={graficosSelecionados.length > 0}
                 escuro={escuro}
               />
             </Grid>

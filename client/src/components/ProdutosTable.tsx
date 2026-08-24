@@ -17,10 +17,12 @@ import TableRow from '@mui/material/TableRow';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import InboxOutlined from '@mui/icons-material/InboxOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
+import OpenInNewOutlined from '@mui/icons-material/OpenInNewOutlined';
 import { brl, AVATAR_COLORS, iniciais } from '@/lib/utils';
 import type { Produto } from '@/lib/types';
 
@@ -111,13 +113,14 @@ export default function ProdutosTable({
                   <TableCell align="right">Preço</TableCell>
                   <TableCell align="right">Clube</TableCell>
                   <TableCell>Promoção</TableCell>
+                  <TableCell align="center">Encarte</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {carregando
                   ? Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i}>
-                      {Array.from({ length: 6 }).map((_, j) => (
+                      {Array.from({ length: 7 }).map((_, j) => (
                         <TableCell key={j}>
                           <Skeleton height={24} />
                         </TableCell>
@@ -210,6 +213,25 @@ export default function ProdutosTable({
                               icon={<LocalOfferOutlined sx={{ fontSize: 14 }} />}
                               label={p.tipo_promocao}
                             />
+                          ) : (
+                            '—'
+                          )}
+                        </TableCell>
+                        <TableCell
+                          align="center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {p.imagem ? (
+                            <Tooltip title={`Abrir imagem do encarte · ${p.data_encarte ?? ''}`}>
+                              <IconButton
+                                size="small"
+                                href={`/api/imagem?arquivo=${encodeURIComponent(p.imagem)}`}
+                                target="_blank"
+                                aria-label={`Abrir imagem do encarte de ${p.produto}`}
+                              >
+                                <OpenInNewOutlined sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
                           ) : (
                             '—'
                           )}

@@ -463,6 +463,65 @@ export function seriesCestaBasica(
     .sort((a, b) => a.grupo.localeCompare(b.grupo, 'pt-BR'));
 }
 
+export interface SerieSelecao {
+  produto: string;
+  pontos: { date: Date; data: string; valor: number | null }[];
+}
+
+/**
+ * Uma série temporal por produto distinto — usada quando o usuário marca itens
+ * na tabela que não pertencem à cesta básica (ex.: carnes, aves, peixes).
+ * Valor = preço por unidade quando há medida reconhecível; senão o preço bruto.
+ */
+export function seriesPorProduto(
+  produtos: Produto[],
+  opts?: { granularidade?: Granularidade; limite?: number }
+): SerieSelecao[] {
+  const porNome = new Map<string, Produto[]>();
+  for (const p of produtos) {
+    if (!p.produto || p.preco == null) continue;
+    (porNome.get(p.produto) ?? porNome.set(p.produto, []).get(p.produto)!).push(p);
+  }
+  const nomes = [...porNome.keys()].sort(
+    (a, b) => porNome.get(b)!.length - porNome.get(a)!.length
+  );
+  return nomes
+    .slice(0, opts?.limite ?? 12)
+    .map((produto) => ({
+      produto,
+      pontos: serieProduto(porNome.get(produto)!, opts)
+        .map((pt) => ({ date: pt.date, data: pt.data, valor: pt.precoUnit ?? pt.preco }))
+        .filter((pt) => pt.valor != null),
+    }))
+    .filter((s) => s.pontos.length >= 2)
+    .sort((a, b) => a.produto.localeCompare(b.produto, 'pt-BR'));
+}
+
+/**
+ * Preço médio por produto (registro mais recente de cada um), para itens fora
+ * da cesta básica — mesma forma de GrupoPreco para reaproveitar gráfico de barras.
+ */
+export function precosGruposSelecao(itens: Produto[]): GrupoPreco[] {
+  const maisRecente = new Map<string, Produto>();
+  for (const p of itens) {
+    if (!p.produto || p.preco == null || p.preco <= 0) continue;
+    const d = dataReferencia(p);
+    if (!d) continue;
+    const atual = maisRecente.get(p.produto);
+    if (!atual || (dataReferencia(atual)?.getTime() ?? 0) < d.getTime()) {
+      maisRecente.set(p.produto, p);
+    }
+  }
+  return [...maisRecente.values()]
+    .map((p) => ({
+      grupo: p.produto as string,
+      precoMedio: p.preco as number,
+      nProdutos: 1,
+      exemplos: p.marca ? [p.marca] : [],
+    }))
+    .sort((a, b) => b.precoMedio - a.precoMedio);
+}
+
 export const formatarPct = (v: number) =>
   `${v > 0 ? '+' : ''}${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 

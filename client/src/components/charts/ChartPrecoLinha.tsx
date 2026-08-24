@@ -7,10 +7,6 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import RestartAlt from '@mui/icons-material/RestartAlt';
@@ -21,7 +17,7 @@ import {
   serieProduto,
   extrairUnidade,
   seriesCestaBasica,
-  rotuloPeriodo,
+  seriesPorProduto,
   type Granularidade,
 } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
@@ -35,6 +31,8 @@ interface ChartPrecoLinhaProps {
   carregandoHistorico: boolean;
   /** base completa para o modo default (grupos da cesta básica) */
   produtosCesta: Produto[];
+  /** true quando há itens marcados na tabela — plota uma linha por produto */
+  modoSelecao?: boolean;
   escuro: boolean;
 }
 
@@ -49,6 +47,7 @@ export default function ChartPrecoLinha({
   historico,
   carregandoHistorico,
   produtosCesta,
+  modoSelecao = false,
   escuro,
 }: ChartPrecoLinhaProps) {
   const [sugestoes, setSugestoes] = useState<Sugerido[]>([]);
@@ -70,8 +69,16 @@ export default function ChartPrecoLinha({
   );
 
   const gruposCesta = useMemo(
-    () => (modoCesta ? seriesCestaBasica(produtosCesta, { granularidade }) : []),
-    [modoCesta, produtosCesta, granularidade]
+    () => (modoCesta && !modoSelecao ? seriesCestaBasica(produtosCesta, { granularidade }) : []),
+    [modoCesta, modoSelecao, produtosCesta, granularidade]
+  );
+
+  const linhasSelecao = useMemo(
+    () =>
+      modoCesta && modoSelecao
+        ? seriesPorProduto(produtosCesta, { granularidade })
+        : [],
+    [modoCesta, modoSelecao, produtosCesta, granularidade]
   );
 
   const unidade = useMemo(() => {
@@ -115,6 +122,27 @@ export default function ChartPrecoLinha({
     };
 
     if (modoCesta) {
+      if (linhasSelecao.length) {
+        const series = linhasSelecao.map((s, i) => ({
+          name: s.produto,
+          type: 'line',
+          data: s.pontos.map((pt) => [pt.date.getTime(), Number(pt.valor!.toFixed(2))]),
+          connectNulls: true,
+          symbolSize: 6,
+          lineStyle: { width: 2, color: cores.series[i % cores.series.length] },
+          itemStyle: { color: cores.series[i % cores.series.length] },
+          emphasis: { focus: 'series' },
+        }));
+        return {
+          ...base,
+          tooltip: {
+            ...base.tooltip,
+            valueFormatter: (v: number) => brl.format(v),
+          },
+          legend: { type: 'scroll' as const, top: 0, textStyle: { color: cores.muted } },
+          series,
+        };
+      }
       if (!gruposCesta.length) return null;
       const series = gruposCesta.map((g, i) => ({
         name: g.grupo.toLowerCase(),
@@ -219,7 +247,7 @@ export default function ChartPrecoLinha({
       legend: { top: 0, textStyle: { color: cores.muted } },
       series,
     };
-  }, [modoCesta, gruposCesta, pontos, porUnidade, podeNormalizar, unidade, escuro, granularidade]);
+  }, [modoCesta, gruposCesta, linhasSelecao, pontos, porUnidade, podeNormalizar, unidade, escuro, granularidade]);
 
   const resumo = useMemo(() => {
     if (!modoCesta) {
@@ -238,15 +266,16 @@ export default function ChartPrecoLinha({
         nEncartes: pontos.length,
       };
     }
-    if (!gruposCesta.length) return null;
-    const datas = gruposCesta.flatMap((g) => g.pontos.map((pt) => pt.data)).sort();
+    const fonte = linhasSelecao.length ? linhasSelecao : gruposCesta;
+    if (!fonte.length) return null;
+    const datas = fonte.flatMap((g) => g.pontos.map((pt) => pt.date)).sort();
     return {
       tipo: 'cesta' as const,
-      nGrupos: gruposCesta.length,
+      nGrupos: fonte.length,
       inicio: datas[0],
       fim: datas[datas.length - 1],
     };
-  }, [modoCesta, pontos, porUnidade, podeNormalizar, gruposCesta]);
+  }, [modoCesta, pontos, porUnidade, podeNormalizar, gruposCesta, linhasSelecao]);
 
   const opcoes = useMemo(
     () =>
@@ -267,7 +296,9 @@ export default function ChartPrecoLinha({
           titulo="Evolução de preço"
           descricao={
             modoCesta
-              ? 'Visão geral: um linha por grupo da cesta básica, em preço médio por unidade (R$/kg·L·un). Selecione um produto para ver o histórico detalhado dele.'
+              ? modoSelecao
+                ? 'Uma linha por produto marcado na tabela. Selecione um produto para ver o histórico detalhado dele.'
+                : 'Visão geral: um linha por grupo da cesta básica, em preço médio por unidade (R$/kg·L·un). Selecione um produto para ver o histórico detalhado dele.'
               : 'Linha do tempo do preço do produto em cada encarte. A linha tracejada é o preço Clube; lacunas indicam que o produto não apareceu no encarte daquele período.'
           }
         />
