@@ -75,14 +75,13 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros, o
                   <TableCell align="right">Preço</TableCell>
                   <TableCell align="right">Clube</TableCell>
                   <TableCell>Promoção</TableCell>
-                  <TableCell>Data</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {carregando
                   ? Array.from({ length: 8 }).map((_, i) => (
                       <TableRow key={i}>
-                        {Array.from({ length: 6 }).map((_, j) => (
+                        {Array.from({ length: 5 }).map((_, j) => (
                           <TableCell key={j}>
                             <Skeleton height={24} />
                           </TableCell>
@@ -167,11 +166,6 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros, o
                             ) : (
                               '—'
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" color="text.secondary">
-                              {p.data_encarte || p.created_at.substring(0, 10)}
-                            </Typography>
                           </TableCell>
                         </TableRow>
                       );

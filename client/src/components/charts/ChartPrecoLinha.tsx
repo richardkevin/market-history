@@ -294,7 +294,7 @@ export default function ChartPrecoLinha({
               );
             }}
           />
-          <ToggleButtonGroup
+          {/* <ToggleButtonGroup
             size="small"
             exclusive
             value={granularidade}
@@ -306,8 +306,8 @@ export default function ChartPrecoLinha({
             <ToggleButton value="encarte">
               <Typography variant="caption">Encarte</Typography>
             </ToggleButton>
-          </ToggleButtonGroup>
-          {!modoCesta && (
+          </ToggleButtonGroup> */}
+          {/* {!modoCesta && (
             <FormControlLabel
               control={
                 <Switch
@@ -319,7 +319,7 @@ export default function ChartPrecoLinha({
               }
               label={<Typography variant="body2">R$/kg·L·un</Typography>}
             />
-          )}
+          )} */}
           <Button
             size="small"
             variant="text"

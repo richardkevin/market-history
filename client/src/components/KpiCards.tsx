@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import Link from '@mui/material/Link';
+import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import Inventory2Outlined from '@mui/icons-material/Inventory2Outlined';
 import TrendingUpOutlined from '@mui/icons-material/TrendingUpOutlined';
 import ShoppingCartOutlined from '@mui/icons-material/ShoppingCartOutlined';
@@ -110,7 +111,7 @@ export default function KpiCards({
   const aguardandoCesta = carregandoCesta || (!comparacao && !erroIpca);
 
   return (
-    <Grid container spacing={2} sx={{ mb: 1 }}>
+    <Grid container spacing={2} sx={{ mb: 3 }}>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         {carregando ? (
           <Skeleton variant="rounded" height={96} />
@@ -129,7 +130,7 @@ export default function KpiCards({
           <Skeleton variant="rounded" height={96} />
         ) : (
           <StatCard
-            titulo="IPCA oficial · 12 meses"
+            titulo="IPCA · 12 meses"
             valor={fmtPct(comparacao?.ipcaAnual ?? null)}
             sub={
               erroIpca
@@ -140,6 +141,20 @@ export default function KpiCards({
             }
             icon={<TrendingUpOutlined />}
             cor="secondary"
+            acao={
+              <Tooltip title="IPCA (IBGE) comparado à inflação registrada nos encartes, mês a mês e em 12 meses. Clique para abrir a fonte.">
+                <IconButton
+                  size="small"
+                  component="a"
+                  href="https://www.ibge.gov.br/explica/inflacao.php"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Fonte: IBGE — Inflação (IPCA)"
+                >
+                  <InfoOutlined sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            }
           />
         )}
       </Grid>
@@ -148,7 +163,7 @@ export default function KpiCards({
           <Skeleton variant="rounded" height={96} />
         ) : (
           <StatCard
-            titulo="Seus encartes · 12 meses"
+            titulo="Encartes · 12 meses"
             valor={fmtPct(comparacao?.encAnual ?? null)}
             sub={
               comparacao
@@ -185,12 +200,6 @@ export default function KpiCards({
           />
         )}
       </Grid>
-      <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 2, px: 0.5 }}>
-        Inflação dos encartes × IPCA no mesmo período · fonte oficial:{' '}
-        <Link href="https://www.ibge.gov.br/explica/inflacao.php" target="_blank" rel="noopener noreferrer">
-          IBGE — Inflação (IPCA)
-        </Link>
-      </Typography>
     </Grid>
   );
 }

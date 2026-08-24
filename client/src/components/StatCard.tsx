@@ -11,14 +11,19 @@ interface StatCardProps {
   sub?: string;
   icon: ReactNode;
   cor: 'primary' | 'secondary' | 'info' | 'warning' | 'success' | 'error';
+  /** elemento opcional no canto superior direito (ex.: link para a fonte) */
+  acao?: ReactNode;
 }
 
-export default function StatCard({ titulo, valor, sub, icon, cor }: StatCardProps) {
+export default function StatCard({ titulo, valor, sub, icon, cor, acao }: StatCardProps) {
   const theme = useTheme();
   const main = theme.palette[cor].main;
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5, height: '100%' }}>
+    <Paper variant="outlined" sx={{ p: 2.5, height: '100%', position: 'relative' }}>
+      {acao != null && (
+        <Box sx={{ position: 'absolute', top: 8, right: 8 }}>{acao}</Box>
+      )}
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', height: '100%' }}>
         <Box
           sx={{

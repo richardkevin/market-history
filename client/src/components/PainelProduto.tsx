@@ -1,27 +1,31 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { alpha } from '@mui/material/styles';import Box from '@mui/material/Box';
+import { alpha } from '@mui/material/styles'; import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Link from '@mui/material/Link';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import OpenInNewOutlined from '@mui/icons-material/OpenInNewOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import EChart from '@/components/charts/EChart';
-import { brl, chartCores } from '@/lib/utils';
+import { brl, chartCores, CESTA_BASICA } from '@/lib/utils';
 import { useHistoricoProduto } from '@/hooks/useHistoricoProduto';
 import {
   serieProduto,
   dataReferencia,
+  chaveMes,
   formatarPct,
   rotuloPeriodo,
   grupoCesta,
@@ -51,6 +55,9 @@ export default function PainelProduto({
   escuro,
 }: PainelProdutoProps) {
   const [granularidade, setGranularidade] = useState<Granularidade>('mes');
+  const [aba, setAba] = useState<'similares' | 'relacionados'>('similares');
+  const [listaAberta, setListaAberta] = useState(true);
+  const [encartesAberto, setEncartesAberto] = useState(false);
 
   const nome = produto?.produto ?? '';
   const { historico, carregando: carregandoHistorico } = useHistoricoProduto(nome);
@@ -100,6 +107,34 @@ export default function PainelProduto({
     }
     return lista.sort((a, b) => a.preco - b.preco).slice(0, 8);
   }, [produto, produtosCesta, variacoes]);
+
+  /**
+   * Produtos relacionados: um representante recente de cada outro grupo da
+   * cesta básica (ex.: para um arroz → feijão, macarrão, café…).
+   */
+  const relacionados = useMemo(() => {
+    if (!produto || !produtosCesta.length) return [];
+    const grupoAlvo = grupoCesta(produto.produto);
+    const porGrupo = new Map<string, { nome: string; preco: number; marca: string | null; medida: string | null }>();
+    for (const p of produtosCesta) {
+      if (!p.produto || p.preco == null || p.produto === produto.produto) continue;
+      const g = grupoCesta(p.produto);
+      if (!g || g === grupoAlvo || porGrupo.has(g)) continue;
+      porGrupo.set(g, { nome: p.produto, preco: p.preco, marca: p.marca, medida: p.medida });
+    }
+    return [...porGrupo.entries()]
+      .map(([grupo, info]) => ({ grupo, ordem: CESTA_BASICA.indexOf(grupo), ...info }))
+      .sort((a, b) => a.ordem - b.ordem)
+      .slice(0, 6);
+  }, [produto, produtosCesta]);
+
+  /** Encartes em que o produto apareceu, do mais recente para o mais antigo. */
+  const encartes = useMemo(() => {
+    return historico
+      .map((p) => ({ registro: p, data: dataReferencia(p) }))
+      .filter((x): x is { registro: Produto; data: Date } => x.data != null)
+      .sort((a, b) => b.data.getTime() - a.data.getTime());
+  }, [historico]);
 
   const optionGrafico = useMemo(() => {
     if (!pontos.length) return null;
@@ -199,61 +234,88 @@ export default function PainelProduto({
                     label={maisRecente.tipo_promocao}
                   />
                 )}
-                <Chip size="small" variant="outlined" label={maisRecente.data_encarte ?? '—'} />
+
               </Stack>
             ) : carregandoHistorico ? (
               <Skeleton height={32} />
             ) : null}
 
-            {/* Encarte */}
+            {/* Encartes em que apareceu */}
             <section>
-              <Typography variant="subtitle2" gutterBottom>Encarte</Typography>
-              {maisRecente?.imagem ? (
-                <Link
-                  href={`/api/imagem?arquivo=${encodeURIComponent(maisRecente.imagem)}`}
-                  target="_blank"
-                  underline="none"
-                  sx={{ display: 'block', position: 'relative' }}
-                >
-                  <Box
-                    component="img"
-                    src={`/api/imagem?arquivo=${encodeURIComponent(maisRecente.imagem)}`}
-                    alt={`Encarte ${maisRecente.data_encarte ?? ''}`}
-                    loading="lazy"
-                    sx={{
-                      width: '100%',
-                      maxHeight: 320,
-                      objectFit: 'cover',
-                      objectPosition: 'top',
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      display: 'block',
-                    }}
-                  />
-                  <Tooltip title="Abrir página do encarte">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => e.preventDefault()}
-                      href={`/api/imagem?arquivo=${encodeURIComponent(maisRecente.imagem)}`}
-                      sx={(t) => ({
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        bgcolor: alpha(t.palette.background.paper, 0.85),
-                        '&:hover': { bgcolor: t.palette.background.paper },
-                      })}
-                    >
-                      <OpenInNewOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Link>
-              ) : carregandoHistorico ? (
-                <Skeleton variant="rounded" height={180} />
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  Imagem não disponível para este produto.
+              <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Encartes {encartes.length > 0 && `(${encartes.length})`}
                 </Typography>
+                {encartes.length > 1 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.25 }}>
+                    <Tooltip title={encartesAberto ? 'Ver menos' : `Ver mais (${encartes.length - 1})`}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setEncartesAberto((v) => !v)}
+                        aria-label="Alternar lista de encartes"
+                        sx={(t) => ({
+                          transform: encartesAberto ? 'rotate(180deg)' : 'none',
+                          transition: t.transitions.create('transform'),
+                        })}
+                      >
+                        <ExpandMoreOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                )}
+              </Stack>
+
+              {carregandoHistorico ? (
+                <Skeleton variant="rounded" height={56} />
+              ) : encartes.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  Nenhum encarte encontrado para este produto.
+                </Typography>
+              ) : (
+                <>
+                  <Stack
+                    spacing={0.5}
+                    sx={encartesAberto ? { maxHeight: 150, overflowY: 'auto', pr: 0.5 } : undefined}
+                  >
+                    {(encartesAberto ? encartes : encartes.slice(0, 1)).map(({ registro, data }) => (
+                      <Box
+                        key={registro.id}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 1,
+                          px: 1.25,
+                          py: 0.6,
+                          borderRadius: 1.5,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                        }}
+                      >
+                        <Typography variant="body2" noWrap component="div">
+                          {rotuloPeriodo(chaveMes(data))}
+                        </Typography>
+                        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', flexShrink: 0 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 700 }} component="div">
+                            {registro.preco != null ? brl.format(registro.preco) : '—'}
+                          </Typography>
+                          {registro.imagem && (
+                            <Tooltip title={`Abrir imagem do encarte · ${registro.data_encarte ?? ''}`}>
+                              <IconButton
+                                size="small"
+                                href={`/api/imagem?arquivo=${encodeURIComponent(registro.imagem)}`}
+                                target="_blank"
+                                aria-label="Abrir imagem do encarte"
+                              >
+                                <OpenInNewOutlined sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        </Stack>
+                      </Box>
+                    ))}
+                  </Stack>
+                </>
               )}
             </section>
 
@@ -286,65 +348,139 @@ export default function PainelProduto({
 
             <Divider />
 
-            {/* Similares */}
+            {/* Similares e relacionados em abas, recolhíveis */}
             <section>
-              <Typography variant="subtitle2" gutterBottom>
-                Produtos similares {similares.length > 0 && `(${similares.length})`}
-              </Typography>
-              {similares.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  Nada encontrado na mesma categoria/grupo da cesta.
-                </Typography>
-              ) : (
-                <Stack spacing={0.75}>
-                  {similares.map((s) => (
-                    <Box
-                      key={s.nome}
-                      onClick={() => onSelecionarProduto(s.nome)}
-                      sx={(t) => ({
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 1,
-                        px: 1.25,
-                        py: 0.75,
-                        borderRadius: 2,
-                        cursor: 'pointer',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        transition: t.transitions.create(['background-color', 'border-color']),
-                        '&:hover': {
-                          bgcolor: alpha(t.palette.primary.main, 0.06),
-                          borderColor: 'primary.main',
-                        },
-                      })}
-                    >
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="body2" noWrap sx={{ fontWeight: 600, maxWidth: 220 }}>
-                          {s.nome}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap component="div">
-                          {[s.marca, s.medida].filter(Boolean).join(' · ') || '—'}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700 }} component="div">
-                          {brl.format(s.preco)}
-                        </Typography>
-                        {s.pct != null && (
+              <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+                <Tabs
+                  value={aba}
+                  onChange={(_, v: 'similares' | 'relacionados') => setAba(v)}
+                  aria-label="Produtos similares e relacionados"
+                  sx={{ minHeight: 36, '& .MuiTab-root': { minHeight: 36, py: 0.5 } }}
+                >
+                  <Tab value="similares" label={`Similares (${similares.length})`} />
+                  <Tab value="relacionados" label={`Relacionados (${relacionados.length})`} />
+                </Tabs>
+                <Tooltip title={listaAberta ? 'Recolher lista' : 'Expandir lista'}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setListaAberta((v) => !v)}
+                    aria-label="Alternar lista de produtos"
+                    sx={(t) => ({
+                      transform: listaAberta ? 'rotate(180deg)' : 'none',
+                      transition: t.transitions.create('transform'),
+                    })}
+                  >
+                    <ExpandMoreOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+
+              <Collapse in={listaAberta}>
+                {aba === 'similares' ? (
+                  similares.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                      Nada encontrado na mesma categoria/grupo da cesta.
+                    </Typography>
+                  ) : (
+                    <Stack spacing={0.75} sx={{ pt: 1 }}>
+                      {similares.slice(0, 4).map((s) => (
+                        <Box
+                          key={s.nome}
+                          onClick={() => onSelecionarProduto(s.nome)}
+                          sx={(t) => ({
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            px: 1.25,
+                            py: 0.75,
+                            borderRadius: 2,
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            transition: t.transitions.create(['background-color', 'border-color']),
+                            '&:hover': {
+                              bgcolor: alpha(t.palette.primary.main, 0.06),
+                              borderColor: 'primary.main',
+                            },
+                          })}
+                        >
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="body2" noWrap sx={{ fontWeight: 600, maxWidth: 220 }} component="div">
+                              {s.nome}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" noWrap component="div">
+                              {[s.marca, s.medida].filter(Boolean).join(' · ') || '—'}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }} component="div">
+                              {brl.format(s.preco)}
+                            </Typography>
+                            {s.pct != null && (
+                              <Typography
+                                variant="caption"
+                                component="div"
+                                sx={{ color: s.pct > 0 ? 'error.main' : 'success.main', fontWeight: 700 }}
+                              >
+                                {formatarPct(s.pct)}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Stack>
+                  )
+                ) : relacionados.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                    Nenhum grupo relacionado da cesta básica.
+                  </Typography>
+                ) : (
+                  <Stack spacing={0.5} sx={{ pt: 1 }}>
+                    {relacionados.slice(0, 4).map((r) => (
+                      <Box
+                        key={r.grupo}
+                        onClick={() => onSelecionarProduto(r.nome)}
+                        sx={(t) => ({
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 1,
+                          px: 1.25,
+                          py: 0.6,
+                          borderRadius: 2,
+                          cursor: 'pointer',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          transition: t.transitions.create(['background-color', 'border-color']),
+                          '&:hover': {
+                            bgcolor: alpha(t.palette.secondary.main, 0.06),
+                            borderColor: 'secondary.main',
+                          },
+                        })}
+                      >
+                        <Box sx={{ minWidth: 0 }}>
                           <Typography
                             variant="caption"
+                            color="text.secondary"
+                            noWrap
                             component="div"
-                            sx={{ color: s.pct > 0 ? 'error.main' : 'success.main', fontWeight: 700 }}
+                            sx={{ fontWeight: 700, letterSpacing: 0.5 }}
                           >
-                            {formatarPct(s.pct)}
+                            {r.grupo}
                           </Typography>
-                        )}
+                          <Typography variant="body2" noWrap sx={{ maxWidth: 230 }} component="div">
+                            {r.nome}
+                          </Typography>
+                        </Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, flexShrink: 0 }} component="div">
+                          {brl.format(r.preco)}
+                        </Typography>
                       </Box>
-                    </Box>
-                  ))}
-                </Stack>
-              )}
+                    ))}
+                  </Stack>
+                )}
+              </Collapse>
             </section>
           </Stack>
         </Stack>

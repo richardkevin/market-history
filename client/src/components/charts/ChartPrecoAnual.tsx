@@ -184,15 +184,6 @@ export default function ChartPrecoAnual({
                 variant={Math.abs(resumo.yoyUltimo) > 0.5 ? 'filled' : 'outlined'}
               />
             </Tooltip>
-            <Tooltip title="Variação acumulada do primeiro ao último ano" placement="top">
-              <Chip size="small" variant="outlined" label={`${formatarPct(resumo.pctTotal)} no total`} />
-            </Tooltip>
-            <Tooltip title="Ano com menor preço médio" placement="top">
-              <Chip size="small" variant="outlined" label={`mais barato: ${resumo.melhorAno.ano}`} />
-            </Tooltip>
-            <Tooltip title="Ano com maior preço médio" placement="top">
-              <Chip size="small" variant="outlined" label={`mais caro: ${resumo.piorAno.ano}`} />
-            </Tooltip>
           </Stack>
           <EChart option={option} height={360} loading={false} />
         </>
