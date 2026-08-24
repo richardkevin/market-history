@@ -57,7 +57,6 @@ export default function Home() {
 
   return (
     <Box sx={{ minHeight: '100dvh' }}>
-      <AppHeader />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -65,19 +64,15 @@ export default function Home() {
           sx={{ mb: 3, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' } }}
         >
           <Box>
-            <Typography variant="h4">Painel de Preços</Typography>
+            <Typography variant="h4">Mercadometro</Typography>
             <Typography variant="body2" color="text.secondary">
               Acompanhe a evolução de preços dos encartes
             </Typography>
           </Box>
-          {ultimaData && (
-            <Chip
-              icon={<CalendarMonth />}
-              label={`Último encarte: ${ultimaData}`}
-              variant="outlined"
-              size="small"
-            />
-          )}
+
+          <section>
+            menu
+          </section>
         </Stack>
 
         <KpiCards
@@ -87,24 +82,31 @@ export default function Home() {
           carregandoCesta={carregandoCesta}
         />
 
-        <FiltrosBar
-          opcoes={filtros}
-          filtroProduto={filtroProduto}
-          filtroAnos={filtroAnos}
-          filtroMarca={filtroMarca}
-          filtroCategoria={filtroCategoria}
-          onChangeProduto={setFiltroProduto}
-          onChangeAnos={setFiltroAnos}
-          onChangeMarca={setFiltroMarca}
-          onChangeCategoria={setFiltroCategoria}
-          onLimpar={limparFiltros}
-        />
-
         <Stack spacing={2} sx={{ mb: 3 }}>
           <CardsDestaque
             variacoes={variacoes}
             carregando={carregandoCesta}
             onSelecionarProduto={setProdutoSelecionado}
+          />
+
+          <FiltrosBar
+            opcoes={filtros}
+            filtroProduto={filtroProduto}
+            filtroAnos={filtroAnos}
+            filtroMarca={filtroMarca}
+            filtroCategoria={filtroCategoria}
+            onChangeProduto={setFiltroProduto}
+            onChangeAnos={setFiltroAnos}
+            onChangeMarca={setFiltroMarca}
+            onChangeCategoria={setFiltroCategoria}
+            onLimpar={limparFiltros}
+          />
+
+          <ProdutosTable
+            produtos={produtos}
+            carregando={carregando}
+            onLimparFiltros={limparFiltros}
+            onAbrirDetalhe={setProdutoDetalhe}
           />
 
           <Grid container spacing={2}>
@@ -146,25 +148,19 @@ export default function Home() {
             </Grid>
           </Grid>
 
-          <ChartHeatmapCategoria
-            produtos={produtosCesta}
-            escuro={escuro}
-            carregando={carregandoCesta}
-          />
-
           <TabelaVariacao
             variacoes={variacoes}
             carregando={carregandoCesta}
             onSelecionarProduto={setProdutoSelecionado}
           />
+
+          <ChartHeatmapCategoria
+            produtos={produtosCesta}
+            escuro={escuro}
+            carregando={carregandoCesta}
+          />
         </Stack>
 
-        <ProdutosTable
-          produtos={produtos}
-          carregando={carregando}
-          onLimparFiltros={limparFiltros}
-          onAbrirDetalhe={setProdutoDetalhe}
-        />
       </Container>
 
       <PainelProduto

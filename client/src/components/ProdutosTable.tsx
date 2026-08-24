@@ -50,8 +50,7 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros, o
         spacing={2}
         sx={{ px: 2.5, pt: 2.5, alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Typography variant="h6">Produtos</Typography>
-        {!carregando && <Chip size="small" label={`${produtos.length} itens`} />}
+        <Typography variant="h6">Produtos monitorados</Typography>
       </Stack>
 
       {!carregando && produtos.length === 0 ? (

@@ -274,7 +274,7 @@ export default function ChartPrecoLinha({
         <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
           <Autocomplete
             size="small"
-            sx={{ minWidth: { xs: '100%', md: 300 } }}
+            sx={{ minWidth: { xs: '100%', md: 200 } }}
             options={opcoes}
             getOptionLabel={(o) => o.produto}
             value={opcoes.find((s) => s.produto === produtoSelecionado) ?? null}
@@ -294,32 +294,6 @@ export default function ChartPrecoLinha({
               );
             }}
           />
-          {/* <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={granularidade}
-            onChange={(_, v) => v && setGranularidade(v)}
-          >
-            <ToggleButton value="mes">
-              <Typography variant="caption">Mês</Typography>
-            </ToggleButton>
-            <ToggleButton value="encarte">
-              <Typography variant="caption">Encarte</Typography>
-            </ToggleButton>
-          </ToggleButtonGroup> */}
-          {/* {!modoCesta && (
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={porUnidade}
-                  onChange={(e) => setPorUnidade(e.target.checked)}
-                  size="small"
-                  disabled={!podeNormalizar}
-                />
-              }
-              label={<Typography variant="body2">R$/kg·L·un</Typography>}
-            />
-          )} */}
           <Button
             size="small"
             variant="text"
@@ -345,17 +319,6 @@ export default function ChartPrecoLinha({
           <Stack direction="row" spacing={0.5} useFlexGap sx={{ mb: 1.5, flexWrap: 'wrap' }}>
             {resumo.tipo === 'cesta' ? (
               <>
-                <Chip
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  label={`${resumo.nGrupos} grupos da cesta básica`}
-                />
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={`${rotuloPeriodo(resumo.inicio)} → ${rotuloPeriodo(resumo.fim)} · R$/kg·L·un`}
-                />
               </>
             ) : (
               <>
