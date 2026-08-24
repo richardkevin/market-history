@@ -167,13 +167,30 @@ def carregar_log_existente() -> list[dict]:
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Baixa encartes historicos do Guanabara")
+    parser.add_argument("--skip-wayback", action="store_true", help="Pula busca no Wayback Machine, usa apenas URLs geradas")
+    parser.add_argument("--wayback-cache", default=os.path.join(PASTA_SAIDA, "wayback_urls.json"), help="Cache das URLs do Wayback")
+    args = parser.parse_args()
+
     criar_pasta()
 
     print("=== Encartes Guanabara - Historico ===\n")
 
-    print("1. Buscando URLs no Wayback Machine...")
-    urls_wayback = buscar_urls_wayback()
-    print(f"   {len(urls_wayback)} URLs encontradas")
+    if args.skip_wayback:
+        print("1. Pulando busca no Wayback (--skip-wayback)")
+        urls_wayback = []
+    elif os.path.exists(args.wayback_cache):
+        print(f"1. Carregando URLs do cache ({args.wayback_cache})...")
+        with open(args.wayback_cache) as f:
+            urls_wayback = json.load(f)
+        print(f"   {len(urls_wayback)} URLs carregadas do cache")
+    else:
+        print("1. Buscando URLs no Wayback Machine...")
+        urls_wayback = buscar_urls_wayback()
+        with open(args.wayback_cache, "w") as f:
+            json.dump(urls_wayback, f)
+        print(f"   {len(urls_wayback)} URLs encontradas (salvas no cache)")
 
     print("\n2. Gerando URLs por padrao de datas...")
     urls_geradas = gerar_urls_por_data()
