@@ -15,7 +15,6 @@ import KpiCards from '@/components/KpiCards';
 import ProdutosTable from '@/components/ProdutosTable';
 import CardsDestaque from '@/components/CardsDestaque';
 import TabelaVariacao from '@/components/TabelaVariacao';
-import CardInflacao from '@/components/CardInflacao';
 import PainelProduto from '@/components/PainelProduto';
 import ChartPrecoLinha from '@/components/charts/ChartPrecoLinha';
 import ChartPrecoAnual from '@/components/charts/ChartPrecoAnual';
@@ -81,7 +80,12 @@ export default function Home() {
           )}
         </Stack>
 
-        <KpiCards carregando={carregando} totalProdutos={produtos.length} />
+        <KpiCards
+          carregando={carregando}
+          totalProdutos={produtos.length}
+          produtosCesta={produtosCesta}
+          carregandoCesta={carregandoCesta}
+        />
 
         <FiltrosBar
           opcoes={filtros}
@@ -127,14 +131,11 @@ export default function Home() {
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, lg: 5 }}>
-              <Stack spacing={2}>
-                <CardInflacao produtos={produtosCesta} carregando={carregandoCesta} />
-                <ChartIndiceCesta
-                  produtos={produtosCesta}
-                  escuro={escuro}
-                  carregando={carregandoCesta}
-                />
-              </Stack>
+              <ChartIndiceCesta
+                produtos={produtosCesta}
+                escuro={escuro}
+                carregando={carregandoCesta}
+              />
             </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>
               <ChartCestaBasica

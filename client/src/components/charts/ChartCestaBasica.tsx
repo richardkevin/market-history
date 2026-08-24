@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import EChart from '@/components/charts/EChart';
 import InfoTitulo from '@/components/InfoTitulo';
 import { brl, chartCores } from '@/lib/utils';
-import { grupoCesta } from '@/lib/historico';
+import { dataReferencia, chaveMes, grupoCesta, rotuloPeriodo, formatarPct, precosGruposCesta } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartCestaBasicaProps {
@@ -15,50 +15,69 @@ interface ChartCestaBasicaProps {
   carregando: boolean;
 }
 
-interface GrupoPreco {
-  grupo: string;
-  precoMedio: number;
-  nProdutos: number;
-  exemplos: string[];
+interface VarGrupo {
+  pct: number | null;
+  mesAnterior?: string;
+  mesAtual?: string;
 }
 
 /**
- * Agrupa produtos similares da cesta básica (todos os arrozes, todos os leites…)
- * e calcula o preço médio do grupo a partir do registro mais recente de cada produto.
+ * Variação do preço médio do grupo entre os dois meses mais recentes em que
+ * ele apareceu nos encartes (por produto, vale o registro mais recente do mês).
  */
-export function precosGruposCesta(itens: Produto[]): GrupoPreco[] {
-  const grupos = new Map<string, Map<string, number>>();
+export function variacaoMensalGrupo(itens: Produto[], grupoAlvo: string): VarGrupo {
+  const medias = new Map<string, Map<string, { t: number; preco: number }>>();
   for (const p of itens) {
-    const g = grupoCesta(p.produto);
-    if (!g || !p.produto) continue;
-    let porProduto = grupos.get(g);
+    if (!p.produto || p.preco == null || grupoCesta(p.produto) !== grupoAlvo) continue;
+    const d = dataReferencia(p);
+    if (!d) continue;
+    const mes = chaveMes(d);
+    let porProduto = medias.get(mes);
     if (!porProduto) {
       porProduto = new Map();
-      grupos.set(g, porProduto);
+      medias.set(mes, porProduto);
     }
-    // mantém só o preço mais recente de cada produto dentro do grupo
-    if (!porProduto.has(p.produto)) porProduto.set(p.produto, p.preco ?? 0);
+    const antigo = porProduto.get(p.produto);
+    if (!antigo || d.getTime() > antigo.t) porProduto.set(p.produto, { t: d.getTime(), preco: p.preco });
   }
-  return [...grupos.entries()]
-    .map(([grupo, porProduto]) => {
-      const precos = [...porProduto.values()].filter((v) => v > 0);
-      return {
-        grupo,
-        precoMedio: precos.reduce((a, b) => a + b, 0) / (precos.length || 1),
-        nProdutos: precos.length,
-        exemplos: [...porProduto.keys()].slice(0, 3),
-      };
-    })
-    .filter((g) => g.nProdutos > 0)
-    .sort((a, b) => b.precoMedio - a.precoMedio);
+
+  const meses = [...medias.keys()].sort();
+  if (meses.length < 2) return { pct: null };
+
+  const media = (mes: string) => {
+    const vs = [...medias.get(mes)!.values()].map((x) => x.preco).filter((v) => v > 0);
+    return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0;
+  };
+  const [mesAnterior, mesAtual] = meses.slice(-2);
+  const anterior = media(mesAnterior);
+  const atual = media(mesAtual);
+  if (!(anterior > 0)) return { pct: null, mesAnterior, mesAtual };
+  return { pct: ((atual - anterior) / anterior) * 100, mesAnterior, mesAtual };
 }
 
 export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCestaBasicaProps) {
-  const nGrupos = useMemo(() => precosGruposCesta(itens).length, [itens]);
+  const grupos = useMemo(() => precosGruposCesta(itens), [itens]);
+  const nGrupos = grupos.length;
+
+  const variacoes = useMemo(() => {
+    const mapa = new Map<string, VarGrupo>();
+    for (const g of grupos) mapa.set(g.grupo, variacaoMensalGrupo(itens, g.grupo));
+    return mapa;
+  }, [itens, grupos]);
+
   const option = useMemo(() => {
-    if (!itens.length) return null;
+    if (!grupos.length) return null;
     const cores = escuro ? chartCores.dark : chartCores.light;
-    const grupos = precosGruposCesta(itens).reverse();
+    const ordenados = [...grupos].reverse();
+
+    const rotuloVariacao = (dataIndex: number, preco: number) => {
+      const g = ordenados[dataIndex];
+      const v = g ? variacoes.get(g.grupo) : undefined;
+      if (!v?.pct || !v.mesAnterior) return brl.format(preco);
+      const seta = v.pct > 0 ? '▲' : '▼';
+      const estilo = v.pct > 0 ? 'alta' : 'baixa';
+      return `${brl.format(preco)}  {${estilo}|${seta} ${formatarPct(v.pct)}}`;
+    };
 
     return {
       backgroundColor: 'transparent',
@@ -67,19 +86,25 @@ export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCes
         backgroundColor: cores.tooltipBg,
         borderWidth: 0,
         textStyle: { color: cores.text },
-        formatter: (p: { name: string }) => {
-          const g = precosGruposCesta(itens).find((x) => x.grupo === p.name);
+        formatter: (p: { dataIndex: number }) => {
+          const g = ordenados[p.dataIndex];
           if (!g) return '';
+          const v = variacoes.get(g.grupo);
+          const linhaVar =
+            v?.pct != null && v.mesAnterior && v.mesAtual
+              ? `vs ${rotuloPeriodo(v.mesAnterior)}: <b style="color:${v.pct > 0 ? '#dc2626' : '#16a34a'}">${formatarPct(v.pct)}</b>`
+              : 'sem mês anterior para comparar';
           return [
             `<b>${g.grupo}</b>`,
             `Média de ${g.nProdutos} produto${g.nProdutos > 1 ? 's' : ''}: <b>${brl.format(g.precoMedio)}</b>`,
+            linhaVar,
             g.exemplos.length ? `<span style="opacity:.7">${g.exemplos.join(' · ')}</span>` : '',
           ]
             .filter(Boolean)
             .join('<br/>');
         },
       },
-      grid: { left: 8, right: 64, top: 8, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 96, top: 8, bottom: 8, containLabel: true },
       xAxis: {
         type: 'value' as const,
         axisLabel: { color: cores.muted, fontSize: 11 },
@@ -87,7 +112,7 @@ export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCes
       },
       yAxis: {
         type: 'category' as const,
-        data: grupos.map((g) => `${g.grupo} (${g.nProdutos})`),
+        data: ordenados.map((g) => `${g.grupo} (${g.nProdutos})`),
         axisLabel: { color: cores.text, fontSize: 11 },
         axisLine: { show: false },
         axisTick: { show: false },
@@ -96,7 +121,7 @@ export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCes
         {
           type: 'bar' as const,
           barMaxWidth: 18,
-          data: grupos.map((g) => Number(g.precoMedio.toFixed(2))),
+          data: ordenados.map((g) => Number(g.precoMedio.toFixed(2))),
           itemStyle: {
             borderRadius: [0, 9, 9, 0],
             color: {
@@ -111,20 +136,24 @@ export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCes
           label: {
             show: true,
             position: 'right' as const,
-            formatter: ({ value }: { value: number }) => brl.format(value),
             fontSize: 10,
             color: cores.muted,
+            formatter: (p: { dataIndex: number; value: number }) => rotuloVariacao(p.dataIndex, p.value),
+            rich: {
+              alta: { color: '#dc2626', fontWeight: 'bold' as const, fontSize: 10 },
+              baixa: { color: '#16a34a', fontWeight: 'bold' as const, fontSize: 10 },
+            },
           },
         },
       ],
     };
-  }, [itens, escuro]);
+  }, [grupos, variacoes, escuro]);
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5 }}>
       <InfoTitulo
         titulo="Cesta básica · preço médio por grupo"
-        descricao="Itens similares são agrupados (ex.: todos os arrozes viram “ARROZ”) e o valor é a média do preço mais recente de cada produto do grupo. O número ao lado do grupo indica quantos produtos entraram na média."
+        descricao="Itens similares são agrupados (ex.: todos os arrozes viram “ARROZ”) e o valor é a média do preço mais recente de cada produto do grupo. O número ao lado do grupo indica quantos produtos entraram na média; ▲/▼ é a variação da média mensal do grupo vs. mês anterior."
       />
       {!option && !carregando ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>

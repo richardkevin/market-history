@@ -10,7 +10,7 @@ interface StatCardProps {
   valor: string;
   sub?: string;
   icon: ReactNode;
-  cor: 'primary' | 'secondary' | 'info' | 'warning';
+  cor: 'primary' | 'secondary' | 'info' | 'warning' | 'success' | 'error';
 }
 
 export default function StatCard({ titulo, valor, sub, icon, cor }: StatCardProps) {

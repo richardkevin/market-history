@@ -13,7 +13,7 @@ interface PontoIPCA {
 let cache: { serie: { mes: string; pct: number }[]; obtidoEm: number } | null = null;
 const TTL_MS = 24 * 60 * 60 * 1000;
 
-/** IPCA mensal (BCB série 433). [{mes: 'YYYY-MM', pct}] ordenado. */
+/** IPCA mensal (BCB série 433, publicada pelo IBGE). [{mes: 'YYYY-MM', pct}] ordenado. */
 export async function GET() {
   if (cache && Date.now() - cache.obtidoEm < TTL_MS) {
     return NextResponse.json({ fonte: 'cache', serie: cache.serie });
@@ -27,10 +27,13 @@ export async function GET() {
     const bruto = (await res.json()) as PontoIPCA[];
     const serie = bruto
       .map((p) => {
-        const [mm, aaaa] = p.data.split('/');
+        // aceita "MM/AAAA" e o formato recente "DD/MM/AAAA" (dia sempre 01)
+        const [primeiro, meio, ultimo] = p.data.split('/');
+        const mm = (ultimo ? meio : primeiro).padStart(2, '0');
+        const aaaa = ultimo ?? meio;
         return { mes: `${aaaa}-${mm}`, pct: parseFloat(p.valor) };
       })
-      .filter((p) => Number.isFinite(p.pct))
+      .filter((p) => /^\d{4}-\d{2}$/.test(p.mes) && Number.isFinite(p.pct))
       .sort((a, b) => a.mes.localeCompare(b.mes));
     cache = { serie, obtidoEm: Date.now() };
     return NextResponse.json({ fonte: 'bcb', serie });

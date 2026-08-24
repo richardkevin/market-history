@@ -403,6 +403,44 @@ export interface SerieGrupo {
   pontos: { date: Date; data: string; precoUnit: number | null }[];
 }
 
+export interface GrupoPreco {
+  grupo: string;
+  precoMedio: number;
+  nProdutos: number;
+  exemplos: string[];
+}
+
+/**
+ * Agrupa produtos similares da cesta básica (todos os arrozes, todos os leites…)
+ * e calcula o preço médio do grupo a partir do registro mais recente de cada produto.
+ */
+export function precosGruposCesta(itens: Produto[]): GrupoPreco[] {
+  const grupos = new Map<string, Map<string, number>>();
+  for (const p of itens) {
+    const g = grupoCesta(p.produto);
+    if (!g || !p.produto) continue;
+    let porProduto = grupos.get(g);
+    if (!porProduto) {
+      porProduto = new Map();
+      grupos.set(g, porProduto);
+    }
+    // mantém só o preço mais recente de cada produto dentro do grupo
+    if (!porProduto.has(p.produto)) porProduto.set(p.produto, p.preco ?? 0);
+  }
+  return [...grupos.entries()]
+    .map(([grupo, porProduto]) => {
+      const precos = [...porProduto.values()].filter((v) => v > 0);
+      return {
+        grupo,
+        precoMedio: precos.reduce((a, b) => a + b, 0) / (precos.length || 1),
+        nProdutos: precos.length,
+        exemplos: [...porProduto.keys()].slice(0, 3),
+      };
+    })
+    .filter((g) => g.nProdutos > 0)
+    .sort((a, b) => b.precoMedio - a.precoMedio);
+}
+
 /** Série temporal de preço médio (por unidade) para cada grupo da cesta básica. */
 export function seriesCestaBasica(
   produtos: Produto[],
