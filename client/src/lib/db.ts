@@ -29,7 +29,7 @@ export interface Produto {
 }
 
 export interface ProdutoFiltro {
-  produto?: string;
+  produto?: string | string[];
   anos?: number[];
   marca?: string;
   categoria?: string;
@@ -40,9 +40,15 @@ export function buscarProdutos(filtros: ProdutoFiltro = {}): Produto[] {
   let query = 'SELECT * FROM produtos WHERE 1=1';
   const params: unknown[] = [];
 
-  if (filtros.produto) {
-    query += ' AND produto LIKE ?';
-    params.push(`%${filtros.produto}%`);
+  const termosProduto = Array.isArray(filtros.produto)
+    ? filtros.produto
+    : filtros.produto
+      ? [filtros.produto]
+      : [];
+  if (termosProduto.length) {
+    // cada termo casa por LIKE — aceita nomes exatos (checkbox) e buscas parciais
+    query += ` AND (${termosProduto.map(() => 'produto LIKE ?').join(' OR ')})`;
+    params.push(...termosProduto.map((t) => `%${t}%`));
   }
   if (filtros.anos?.length) {
     const placeholders = filtros.anos.map(() => '?').join(', ');

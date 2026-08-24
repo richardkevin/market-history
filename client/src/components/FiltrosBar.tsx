@@ -12,11 +12,11 @@ import type { Filtros } from '@/lib/types';
 
 interface FiltrosBarProps {
   opcoes: Filtros;
-  filtroProduto: string | null;
+  filtroProduto: string[];
   filtroAnos: number[];
   filtroMarca: string | null;
   filtroCategoria: string | null;
-  onChangeProduto: (v: string | null) => void;
+  onChangeProduto: (v: string[]) => void;
   onChangeAnos: (v: number[]) => void;
   onChangeMarca: (v: string | null) => void;
   onChangeCategoria: (v: string | null) => void;
@@ -36,7 +36,7 @@ export default function FiltrosBar({
   onLimpar,
 }: FiltrosBarProps) {
   const temFiltro = Boolean(
-    filtroProduto || filtroAnos.length || filtroMarca || filtroCategoria
+    filtroProduto.length || filtroAnos.length || filtroMarca || filtroCategoria
   );
 
   return (
@@ -48,7 +48,9 @@ export default function FiltrosBar({
       >
         <Autocomplete
           sx={{ flex: '2 1 260px' }}
+          multiple
           freeSolo
+          limitTags={2}
           options={opcoes.produtos}
           value={filtroProduto}
           onChange={(_, v) => onChangeProduto(v)}

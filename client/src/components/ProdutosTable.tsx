@@ -16,6 +16,7 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import InboxOutlined from '@mui/icons-material/InboxOutlined';
@@ -29,9 +30,20 @@ interface ProdutosTableProps {
   onLimparFiltros: () => void;
   /** clique numa linha abre o painel de detalhe do produto */
   onAbrirDetalhe?: (produto: Produto) => void;
+  /** produtos marcados na tabela (= filtroProduto ativo da página) */
+  selecionados: string[];
+  /** marca/desmarca um produto nos filtros ativos */
+  onToggleSelecionado: (produto: string) => void;
 }
 
-export default function ProdutosTable({ produtos, carregando, onLimparFiltros, onAbrirDetalhe }: ProdutosTableProps) {
+export default function ProdutosTable({
+  produtos,
+  carregando,
+  onLimparFiltros,
+  onAbrirDetalhe,
+  selecionados,
+  onToggleSelecionado,
+}: ProdutosTableProps) {
   const [pagina, setPagina] = useState(0);
   const [porPagina, setPorPagina] = useState(10);
   const [produtosAnteriores, setProdutosAnteriores] = useState(produtos);
@@ -53,6 +65,30 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros, o
         <Typography variant="h6">Produtos monitorados</Typography>
       </Stack>
 
+
+      <Stack
+        direction="row"
+        spacing={0.75}
+        useFlexGap
+        sx={{ px: 2.5, pb: 1.5, flexWrap: 'wrap', alignItems: 'center' }}
+      >
+        {selecionados.length > 0 ? (
+          <Typography variant="caption" color="text.secondary">
+            Nos filtros ({selecionados.length}):
+          </Typography>
+        ) : '\u00A0'}
+        {selecionados.map((nome) => (
+          <Chip
+            key={nome}
+            size="small"
+            color="primary"
+            variant="outlined"
+            label={nome}
+            onDelete={() => onToggleSelecionado(nome)}
+          />
+        ))}
+      </Stack>
+
       {!carregando && produtos.length === 0 ? (
         <Stack spacing={1} sx={{ py: 8, alignItems: 'center' }}>
           <InboxOutlined sx={{ fontSize: 48, color: 'text.disabled' }} />
@@ -69,6 +105,7 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros, o
             <Table stickyHeader size="small" aria-label="lista de produtos">
               <TableHead>
                 <TableRow>
+                  <TableCell padding="checkbox" />
                   <TableCell>Produto</TableCell>
                   <TableCell>Marca</TableCell>
                   <TableCell align="right">Preço</TableCell>
@@ -79,96 +116,107 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros, o
               <TableBody>
                 {carregando
                   ? Array.from({ length: 8 }).map((_, i) => (
-                      <TableRow key={i}>
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <TableCell key={j}>
-                            <Skeleton height={24} />
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
+                    <TableRow key={i}>
+                      {Array.from({ length: 6 }).map((_, j) => (
+                        <TableCell key={j}>
+                          <Skeleton height={24} />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
                   : paginaSlice.map((p, i) => {
-                      const temDesconto =
-                        p.preco && p.preco_clube && p.preco_clube < p.preco;
-                      const desconto = temDesconto
-                        ? Math.round((1 - (p.preco_clube as number) / (p.preco as number)) * 100)
-                        : null;
-                      return (
-                        <TableRow
-                      key={p.id}
-                      hover
-                      onClick={() => onAbrirDetalhe?.(p)}
-                      sx={{ cursor: onAbrirDetalhe ? 'pointer' : 'default' }}
-                    >
-                          <TableCell>
-                            <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-                              <Avatar
-                                sx={{
-                                  width: 34,
-                                  height: 34,
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  bgcolor: alpha(AVATAR_COLORS[(p.id + i) % AVATAR_COLORS.length], 0.15),
-                                  color: AVATAR_COLORS[(p.id + i) % AVATAR_COLORS.length],
-                                }}
-                              >
-                                {iniciais(p.produto)}
-                              </Avatar>
-                              <Box sx={{ minWidth: 0, maxWidth: 320 }}>
-                                <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
-                                  {p.produto}
+                    const temDesconto =
+                      p.preco && p.preco_clube && p.preco_clube < p.preco;
+                    const desconto = temDesconto
+                      ? Math.round((1 - (p.preco_clube as number) / (p.preco as number)) * 100)
+                      : null;
+                    return (
+                      <TableRow
+                        key={p.id}
+                        hover
+                        onClick={() => onAbrirDetalhe?.(p)}
+                        sx={{ cursor: onAbrirDetalhe ? 'pointer' : 'default' }}
+                      >
+                        <TableCell
+                          padding="checkbox"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Checkbox
+                            size="small"
+                            checked={selecionados.includes(p.produto)}
+                            onChange={() => onToggleSelecionado(p.produto)}
+                            aria-label={`Selecionar ${p.produto} nos filtros`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                            <Avatar
+                              sx={{
+                                width: 34,
+                                height: 34,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                bgcolor: alpha(AVATAR_COLORS[(p.id + i) % AVATAR_COLORS.length], 0.15),
+                                color: AVATAR_COLORS[(p.id + i) % AVATAR_COLORS.length],
+                              }}
+                            >
+                              {iniciais(p.produto)}
+                            </Avatar>
+                            <Box sx={{ minWidth: 0, maxWidth: 320 }}>
+                              <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>
+                                {p.produto}
+                              </Typography>
+                              {p.medida && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {p.medida}
                                 </Typography>
-                                {p.medida && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    {p.medida}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Stack>
-                          </TableCell>
-                          <TableCell>
-                            {p.marca ? (
-                              <Chip label={p.marca} size="small" variant="outlined" />
-                            ) : (
-                              '—'
-                            )}
-                          </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              {p.preco != null ? brl.format(p.preco) : '—'}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">
-                            {temDesconto ? (
-                              <Tooltip title={`${desconto}% de desconto`}>
-                                <Chip
-                                  size="small"
-                                  color="success"
-                                  label={brl.format(p.preco_clube as number)}
-                                />
-                              </Tooltip>
-                            ) : p.preco_clube != null ? (
-                              brl.format(p.preco_clube)
-                            ) : (
-                              '—'
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {p.tipo_promocao ? (
+                              )}
+                            </Box>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          {p.marca ? (
+                            <Chip label={p.marca} size="small" variant="outlined" />
+                          ) : (
+                            '—'
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {p.preco != null ? brl.format(p.preco) : '—'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          {temDesconto ? (
+                            <Tooltip title={`${desconto}% de desconto`}>
                               <Chip
                                 size="small"
-                                color="secondary"
-                                variant="outlined"
-                                icon={<LocalOfferOutlined sx={{ fontSize: 14 }} />}
-                                label={p.tipo_promocao}
+                                color="success"
+                                label={brl.format(p.preco_clube as number)}
                               />
-                            ) : (
-                              '—'
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                            </Tooltip>
+                          ) : p.preco_clube != null ? (
+                            brl.format(p.preco_clube)
+                          ) : (
+                            '—'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {p.tipo_promocao ? (
+                            <Chip
+                              size="small"
+                              color="secondary"
+                              variant="outlined"
+                              icon={<LocalOfferOutlined sx={{ fontSize: 14 }} />}
+                              label={p.tipo_promocao}
+                            />
+                          ) : (
+                            '—'
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </TableContainer>

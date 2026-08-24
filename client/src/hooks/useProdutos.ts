@@ -14,10 +14,13 @@ export function useProdutos() {
     categorias: [],
     ultimaData: null,
   });
-  const [filtroProduto, setFiltroProduto] = useState<string | null>(null);
+  const [filtroProduto, setFiltroProduto] = useState<string[]>([]);
   const [filtroAnos, setFiltroAnos] = useState<number[]>([]);
   const [filtroMarca, setFiltroMarca] = useState<string | null>(null);
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
+  // marcados na tabela: afetam apenas os gráficos, nunca a listagem
+  const [graficosSelecionados, setGraficosSelecionados] = useState<string[]>([]);
+  const [produtosSelecionados, setProdutosSelecionados] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [carregandoCesta, setCarregandoCesta] = useState(true);
 
@@ -43,7 +46,7 @@ export function useProdutos() {
     let vigente = true;
     async function carregarProdutos() {
       const params = new URLSearchParams();
-      if (filtroProduto) params.set('produto', filtroProduto);
+      for (const nome of filtroProduto) params.append('produto', nome);
       if (filtroAnos.length) params.set('anos', filtroAnos.join(','));
       if (filtroMarca) params.set('marca', filtroMarca);
       if (filtroCategoria) params.set('categoria', filtroCategoria);
@@ -61,8 +64,29 @@ export function useProdutos() {
     };
   }, [filtroProduto, filtroAnos, filtroMarca, filtroCategoria]);
 
+  useEffect(() => {
+    if (!graficosSelecionados.length) return;
+    let vigente = true;
+    const params = new URLSearchParams();
+    for (const nome of graficosSelecionados) params.append('produto', nome);
+    fetch(`/api/produtos?${params.toString()}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (vigente) setProdutosSelecionados(Array.isArray(data) ? data : []);
+      })
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
+  }, [graficosSelecionados]);
+
+  const alternarGraficoSelecionado = (nome: string) =>
+    setGraficosSelecionados((prev) =>
+      prev.includes(nome) ? prev.filter((n) => n !== nome) : [...prev, nome]
+    );
+
   const limparFiltros = () => {
-    setFiltroProduto(null);
+    setFiltroProduto([]);
     setFiltroAnos([]);
     setFiltroMarca(null);
     setFiltroCategoria(null);
@@ -83,6 +107,9 @@ export function useProdutos() {
     filtros,
     filtroProduto,
     setFiltroProduto,
+    graficosSelecionados,
+    alternarGraficoSelecionado,
+    produtosSelecionados,
     filtroAnos,
     setFiltroAnos,
     filtroMarca,

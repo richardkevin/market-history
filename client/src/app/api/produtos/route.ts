@@ -22,7 +22,9 @@ function parseListaNumeros(valor: string | null): number[] | undefined {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
-  const produto = searchParams.get('produto') || undefined;
+  // aceita ?produto=a&produto=b (checkboxes) ou um único termo
+  const produtosTermos = searchParams.getAll('produto').filter(Boolean);
+  const produto = produtosTermos[0] || undefined;
   const anos = parseListaNumeros(searchParams.get('anos'));
   const marca = searchParams.get('marca') || undefined;
   const categoria = searchParams.get('categoria') || undefined;
@@ -49,7 +51,12 @@ export async function GET(request: NextRequest) {
       case 'produtos':
       default:
         return NextResponse.json(
-          buscarProdutos({ produto, anos, marca, categoria })
+          buscarProdutos({
+            produto: produtosTermos.length ? produtosTermos : undefined,
+            anos,
+            marca,
+            categoria,
+          })
         );
     }
   } catch (error) {

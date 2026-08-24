@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useColorScheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
@@ -23,6 +23,7 @@ import ChartIndiceCesta from '@/components/charts/ChartIndiceCesta';
 import ChartHeatmapCategoria from '@/components/charts/ChartHeatmapCategoria';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useHistoricoProduto } from '@/hooks/useHistoricoProduto';
+import { variacoesDesdeUltimoEncarte } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 export default function Home() {
@@ -50,10 +51,20 @@ export default function Home() {
     carregandoCesta,
     limparFiltros,
     ultimaData,
+    graficosSelecionados,
+    alternarGraficoSelecionado,
+    produtosSelecionados,
   } = useProdutos();
 
   const { historico, carregando: carregandoHistorico } =
     useHistoricoProduto(produtoSelecionado);
+
+  // gráficos refletem os produtos marcados na tabela; sem marcação, a cesta completa
+  const produtosGrafico = graficosSelecionados.length ? produtosSelecionados : produtosCesta;
+  const variacoesGrafico = useMemo(
+    () => variacoesDesdeUltimoEncarte(produtosGrafico),
+    [produtosGrafico]
+  );
 
   return (
     <Box sx={{ minHeight: '100dvh' }}>
@@ -78,7 +89,7 @@ export default function Home() {
         <KpiCards
           carregando={carregando}
           totalProdutos={produtos.length}
-          produtosCesta={produtosCesta}
+          produtosCesta={produtosGrafico}
           carregandoCesta={carregandoCesta}
         />
 
@@ -102,12 +113,14 @@ export default function Home() {
             onLimpar={limparFiltros}
           />
 
-          <ProdutosTable
-            produtos={produtos}
-            carregando={carregando}
-            onLimparFiltros={limparFiltros}
-            onAbrirDetalhe={setProdutoDetalhe}
-          />
+        <ProdutosTable
+          produtos={produtos}
+          carregando={carregando}
+          onLimparFiltros={limparFiltros}
+          selecionados={graficosSelecionados}
+          onToggleSelecionado={alternarGraficoSelecionado}
+          onAbrirDetalhe={setProdutoDetalhe}
+        />
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, lg: 7 }}>
@@ -116,7 +129,7 @@ export default function Home() {
                 onSelecionarProduto={setProdutoSelecionado}
                 historico={historico}
                 carregandoHistorico={carregandoHistorico}
-                produtosCesta={produtosCesta}
+                produtosCesta={produtosGrafico}
                 escuro={escuro}
               />
             </Grid>
@@ -125,7 +138,7 @@ export default function Home() {
                 nomeProduto={produtoSelecionado}
                 historico={historico}
                 carregando={carregandoHistorico}
-                produtosCesta={produtosCesta}
+                produtosCesta={produtosGrafico}
                 escuro={escuro}
               />
             </Grid>
@@ -134,14 +147,14 @@ export default function Home() {
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, lg: 5 }}>
               <ChartIndiceCesta
-                produtos={produtosCesta}
+                produtos={produtosGrafico}
                 escuro={escuro}
                 carregando={carregandoCesta}
               />
             </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>
               <ChartCestaBasica
-                itens={produtosCesta}
+                itens={produtosGrafico}
                 escuro={escuro}
                 carregando={carregandoCesta}
               />
@@ -149,13 +162,13 @@ export default function Home() {
           </Grid>
 
           <TabelaVariacao
-            variacoes={variacoes}
+            variacoes={variacoesGrafico}
             carregando={carregandoCesta}
             onSelecionarProduto={setProdutoSelecionado}
           />
 
           <ChartHeatmapCategoria
-            produtos={produtosCesta}
+            produtos={produtosGrafico}
             escuro={escuro}
             carregando={carregandoCesta}
           />
