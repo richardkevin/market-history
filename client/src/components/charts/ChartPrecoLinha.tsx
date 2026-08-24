@@ -9,12 +9,21 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import RestartAlt from '@mui/icons-material/RestartAlt';
 import EChart from '@/components/charts/EChart';
+import InfoTitulo from '@/components/InfoTitulo';
 import { brl, chartCores } from '@/lib/utils';
-import { serieProduto, extrairUnidade } from '@/lib/historico';
+import {
+  serieProduto,
+  extrairUnidade,
+  seriesCestaBasica,
+  rotuloPeriodo,
+  type Granularidade,
+} from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartPrecoLinhaProps {
@@ -24,6 +33,8 @@ interface ChartPrecoLinhaProps {
   /** histórico do produto selecionado (compartilhado com outros gráficos) */
   historico: Produto[];
   carregandoHistorico: boolean;
+  /** base completa para o modo default (grupos da cesta básica) */
+  produtosCesta: Produto[];
   escuro: boolean;
 }
 
@@ -37,10 +48,14 @@ export default function ChartPrecoLinha({
   onSelecionarProduto,
   historico,
   carregandoHistorico,
+  produtosCesta,
   escuro,
 }: ChartPrecoLinhaProps) {
   const [sugestoes, setSugestoes] = useState<Sugerido[]>([]);
   const [porUnidade, setPorUnidade] = useState(false);
+  const [granularidade, setGranularidade] = useState<Granularidade>('mes');
+
+  const modoCesta = produtoSelecionado == null;
 
   useEffect(() => {
     fetch('/api/produtos?action=produtos-populares')
@@ -49,7 +64,15 @@ export default function ChartPrecoLinha({
       .catch(() => setSugestoes([]));
   }, []);
 
-  const pontos = useMemo(() => serieProduto(historico), [historico]);
+  const pontos = useMemo(
+    () => serieProduto(historico, { granularidade }),
+    [historico, granularidade]
+  );
+
+  const gruposCesta = useMemo(
+    () => (modoCesta ? seriesCestaBasica(produtosCesta, { granularidade }) : []),
+    [modoCesta, produtosCesta, granularidade]
+  );
 
   const unidade = useMemo(() => {
     const comMedida = [...pontos].reverse().find((p) => p.medida);
@@ -60,16 +83,70 @@ export default function ChartPrecoLinha({
   const podeNormalizar = unidade != null;
 
   const option = useMemo(() => {
-    if (!pontos.length) return null;
     const cores = escuro ? chartCores.dark : chartCores.light;
+    const eixoTempo = {
+      type: 'time' as const,
+      axisLabel: {
+        color: cores.muted,
+        fontSize: 11,
+        formatter: (v: number) =>
+          new Date(v).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+      },
+      axisLine: { lineStyle: { color: cores.split } },
+      splitLine: { show: false },
+    };
+    const eixoPreco = {
+      type: 'value' as const,
+      scale: true,
+      axisLabel: { color: cores.muted, fontSize: 11, formatter: (v: number) => brl.format(v) },
+      splitLine: { lineStyle: { color: cores.split } },
+    };
+    const base = {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis' as const,
+        backgroundColor: cores.tooltipBg,
+        borderWidth: 0,
+        textStyle: { color: cores.text },
+      },
+      grid: { left: 8, right: 16, top: 32, bottom: 8, containLabel: true },
+      xAxis: eixoTempo,
+      yAxis: eixoPreco,
+    };
+
+    if (modoCesta) {
+      if (!gruposCesta.length) return null;
+      const series = gruposCesta.map((g, i) => ({
+        name: g.grupo.toLowerCase(),
+        type: 'line',
+        data: g.pontos.map((pt) => [pt.date.getTime(), Number(pt.precoUnit!.toFixed(2))]),
+        connectNulls: true,
+        symbolSize: 5,
+        lineStyle: { width: 2, color: cores.series[i % cores.series.length] },
+        itemStyle: { color: cores.series[i % cores.series.length] },
+        emphasis: { focus: 'series' },
+      }));
+      return {
+        ...base,
+        tooltip: {
+          ...base.tooltip,
+          valueFormatter: (v: number) => `${brl.format(v)} por kg/L/un`,
+        },
+        legend: { type: 'scroll' as const, top: 0, textStyle: { color: cores.muted } },
+        series,
+      };
+    }
+
+    if (!pontos.length) return null;
     const usarUnitario = porUnidade && podeNormalizar;
-    const sufixo = usarUnitario
-      ? unidade!.base === 'kg'
-        ? '/kg'
-        : unidade!.base === 'L'
-          ? '/L'
-          : '/un'
-      : '';
+    const sufixo =
+      usarUnitario
+        ? unidade!.base === 'kg'
+          ? '/kg'
+          : unidade!.base === 'L'
+            ? '/L'
+            : '/un'
+        : '';
 
     const valor = (p: (typeof pontos)[number]) =>
       usarUnitario ? p.precoUnit : p.preco;
@@ -115,12 +192,9 @@ export default function ChartPrecoLinha({
     }
 
     return {
-      backgroundColor: 'transparent',
+      ...base,
       tooltip: {
-        trigger: 'axis' as const,
-        backgroundColor: cores.tooltipBg,
-        borderWidth: 0,
-        textStyle: { color: cores.text },
+        ...base.tooltip,
         formatter: (
           params: {
             marker?: string;
@@ -130,52 +204,49 @@ export default function ChartPrecoLinha({
           }[]
         ) => {
           const d = new Date(params[0].value[0]);
+          const titulo =
+            granularidade === 'mes'
+              ? d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+              : d.toLocaleDateString('pt-BR');
           const linhas = params.map(
             (p) =>
               `${p.marker} ${p.seriesName}: <b>${brl.format(p.value[1])}</b>${p.data?.medida ? ` <span style="opacity:.6">(${p.data.medida})</span>` : ''}`
           );
           if (params[0]?.data?.promocao) linhas.push('🏷️ encarte com promoção');
-          return `<b>${d.toLocaleDateString('pt-BR')}</b><br/>${linhas.join('<br/>')}`;
+          return `<b>${titulo}</b><br/>${linhas.join('<br/>')}`;
         },
       },
       legend: { top: 0, textStyle: { color: cores.muted } },
-      grid: { left: 8, right: 16, top: 32, bottom: 8, containLabel: true },
-      xAxis: {
-        type: 'time' as const,
-        axisLabel: {
-          color: cores.muted,
-          fontSize: 11,
-          formatter: (v: number) =>
-            new Date(v).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
-        },
-        axisLine: { lineStyle: { color: cores.split } },
-        splitLine: { show: false },
-      },
-      yAxis: {
-        type: 'value' as const,
-        scale: true,
-        axisLabel: { color: cores.muted, fontSize: 11, formatter: (v: number) => brl.format(v) },
-        splitLine: { lineStyle: { color: cores.split } },
-      },
       series,
     };
-  }, [pontos, porUnidade, podeNormalizar, unidade, escuro]);
+  }, [modoCesta, gruposCesta, pontos, porUnidade, podeNormalizar, unidade, escuro, granularidade]);
 
   const resumo = useMemo(() => {
-    if (!pontos.length) return null;
-    const usarUnitario = porUnidade && podeNormalizar;
-    const valor = (p: (typeof pontos)[number]) => (usarUnitario ? p.precoUnit : p.preco);
-    const v1 = valor(pontos[0]);
-    const v2 = valor(pontos[pontos.length - 1]);
-    if (v1 == null || v2 == null || !v1) return null;
-    const valores = pontos.map((p) => valor(p)).filter((v): v is number => v != null);
+    if (!modoCesta) {
+      if (!pontos.length) return null;
+      const usarUnitario = porUnidade && podeNormalizar;
+      const valor = (p: (typeof pontos)[number]) => (usarUnitario ? p.precoUnit : p.preco);
+      const v1 = valor(pontos[0]);
+      const v2 = valor(pontos[pontos.length - 1]);
+      if (v1 == null || v2 == null || !v1) return null;
+      const valores = pontos.map((p) => valor(p)).filter((v): v is number => v != null);
+      return {
+        tipo: 'produto' as const,
+        pct: ((v2 - v1) / v1) * 100,
+        minimo: Math.min(...valores),
+        maximo: Math.max(...valores),
+        nEncartes: pontos.length,
+      };
+    }
+    if (!gruposCesta.length) return null;
+    const datas = gruposCesta.flatMap((g) => g.pontos.map((pt) => pt.data)).sort();
     return {
-      pct: ((v2 - v1) / v1) * 100,
-      minimo: Math.min(...valores),
-      maximo: Math.max(...valores),
-      nEncartes: pontos.length,
+      tipo: 'cesta' as const,
+      nGrupos: gruposCesta.length,
+      inicio: datas[0],
+      fim: datas[datas.length - 1],
     };
-  }, [pontos, porUnidade, podeNormalizar]);
+  }, [modoCesta, pontos, porUnidade, podeNormalizar, gruposCesta]);
 
   const opcoes = useMemo(
     () =>
@@ -192,7 +263,14 @@ export default function ChartPrecoLinha({
         spacing={1.5}
         sx={{ mb: 2, alignItems: { md: 'center' }, justifyContent: 'space-between' }}
       >
-        <Typography variant="h6">Evolução de preço</Typography>
+        <InfoTitulo
+          titulo="Evolução de preço"
+          descricao={
+            modoCesta
+              ? 'Visão geral: um linha por grupo da cesta básica, em preço médio por unidade (R$/kg·L·un). Selecione um produto para ver o histórico detalhado dele.'
+              : 'Linha do tempo do preço do produto em cada encarte. A linha tracejada é o preço Clube; lacunas indicam que o produto não apareceu no encarte daquele período.'
+          }
+        />
         <Stack direction="row" spacing={1.5} useFlexGap sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
           <Autocomplete
             size="small"
@@ -216,24 +294,40 @@ export default function ChartPrecoLinha({
               );
             }}
           />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={porUnidade}
-                onChange={(e) => setPorUnidade(e.target.checked)}
-                size="small"
-                disabled={!podeNormalizar}
-              />
-            }
-            label={<Typography variant="body2">R$/kg·L·un</Typography>}
-          />
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={granularidade}
+            onChange={(_, v) => v && setGranularidade(v)}
+          >
+            <ToggleButton value="mes">
+              <Typography variant="caption">Mês</Typography>
+            </ToggleButton>
+            <ToggleButton value="encarte">
+              <Typography variant="caption">Encarte</Typography>
+            </ToggleButton>
+          </ToggleButtonGroup>
+          {!modoCesta && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={porUnidade}
+                  onChange={(e) => setPorUnidade(e.target.checked)}
+                  size="small"
+                  disabled={!podeNormalizar}
+                />
+              }
+              label={<Typography variant="body2">R$/kg·L·un</Typography>}
+            />
+          )}
           <Button
             size="small"
             variant="text"
             startIcon={<RestartAlt />}
-            disabled={!produtoSelecionado && !porUnidade}
+            disabled={modoCesta && !porUnidade && granularidade === 'mes'}
             onClick={() => {
               setPorUnidade(false);
+              setGranularidade('mes');
               onSelecionarProduto(null);
             }}
           >
@@ -242,32 +336,46 @@ export default function ChartPrecoLinha({
         </Stack>
       </Stack>
 
-      {!produtoSelecionado ? (
-        <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
-          Selecione um produto para ver a evolução do preço ao longo dos encartes.
-        </Typography>
-      ) : carregandoHistorico ? (
+      {carregandoHistorico && !modoCesta ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
           Carregando histórico…
         </Typography>
       ) : option && resumo ? (
         <>
           <Stack direction="row" spacing={0.5} useFlexGap sx={{ mb: 1.5, flexWrap: 'wrap' }}>
-            <Chip
-              size="small"
-              label={`${resumo.pct > 0 ? '▲' : resumo.pct < 0 ? '▼' : '='} ${Math.abs(resumo.pct).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% desde o primeiro encarte`}
-              color={resumo.pct > 0.5 ? 'error' : resumo.pct < -0.5 ? 'success' : 'default'}
-              variant={Math.abs(resumo.pct) > 0.5 ? 'filled' : 'outlined'}
-            />
-            <Chip size="small" variant="outlined" label={`mín ${brl.format(resumo.minimo)}`} />
-            <Chip size="small" variant="outlined" label={`máx ${brl.format(resumo.maximo)}`} />
-            <Chip size="small" variant="outlined" label={`${resumo.nEncartes} encartes`} />
+            {resumo.tipo === 'cesta' ? (
+              <>
+                <Chip
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  label={`${resumo.nGrupos} grupos da cesta básica`}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={`${rotuloPeriodo(resumo.inicio)} → ${rotuloPeriodo(resumo.fim)} · R$/kg·L·un`}
+                />
+              </>
+            ) : (
+              <>
+                <Chip
+                  size="small"
+                  label={`${resumo.pct > 0 ? '▲' : resumo.pct < 0 ? '▼' : '='} ${Math.abs(resumo.pct).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% desde o primeiro encarte`}
+                  color={resumo.pct > 0.5 ? 'error' : resumo.pct < -0.5 ? 'success' : 'default'}
+                  variant={Math.abs(resumo.pct) > 0.5 ? 'filled' : 'outlined'}
+                />
+                <Chip size="small" variant="outlined" label={`mín ${brl.format(resumo.minimo)}`} />
+                <Chip size="small" variant="outlined" label={`máx ${brl.format(resumo.maximo)}`} />
+                <Chip size="small" variant="outlined" label={`${resumo.nEncartes} encartes`} />
+              </>
+            )}
           </Stack>
           <EChart option={option} height={360} loading={false} />
         </>
       ) : (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
-          Sem preços registrados para este produto.
+          Sem preços registrados.
         </Typography>
       )}
     </Paper>

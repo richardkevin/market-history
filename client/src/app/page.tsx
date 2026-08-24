@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useColorScheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
@@ -15,14 +15,16 @@ import KpiCards from '@/components/KpiCards';
 import ProdutosTable from '@/components/ProdutosTable';
 import CardsDestaque from '@/components/CardsDestaque';
 import TabelaVariacao from '@/components/TabelaVariacao';
+import CardInflacao from '@/components/CardInflacao';
+import PainelProduto from '@/components/PainelProduto';
 import ChartPrecoLinha from '@/components/charts/ChartPrecoLinha';
 import ChartPrecoAnual from '@/components/charts/ChartPrecoAnual';
 import ChartCestaBasica from '@/components/charts/ChartCestaBasica';
 import ChartIndiceCesta from '@/components/charts/ChartIndiceCesta';
 import ChartHeatmapCategoria from '@/components/charts/ChartHeatmapCategoria';
-import { CESTA_BASICA } from '@/lib/utils';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useHistoricoProduto } from '@/hooks/useHistoricoProduto';
+import type { Produto } from '@/lib/types';
 
 export default function Home() {
   const { mode, systemMode } = useColorScheme();
@@ -30,6 +32,7 @@ export default function Home() {
   const escuro = modoResolvido === 'dark';
 
   const [produtoSelecionado, setProdutoSelecionado] = useState<string | null>(null);
+  const [produtoDetalhe, setProdutoDetalhe] = useState<Produto | null>(null);
 
   const {
     produtos,
@@ -52,14 +55,6 @@ export default function Home() {
 
   const { historico, carregando: carregandoHistorico } =
     useHistoricoProduto(produtoSelecionado);
-
-  const itensCestaBasica = useMemo(
-    () =>
-      produtosCesta.filter((p) =>
-        CESTA_BASICA.some((t) => p.produto.toUpperCase().includes(t))
-      ),
-    [produtosCesta]
-  );
 
   return (
     <Box sx={{ minHeight: '100dvh' }}>
@@ -115,6 +110,7 @@ export default function Home() {
                 onSelecionarProduto={setProdutoSelecionado}
                 historico={historico}
                 carregandoHistorico={carregandoHistorico}
+                produtosCesta={produtosCesta}
                 escuro={escuro}
               />
             </Grid>
@@ -123,6 +119,7 @@ export default function Home() {
                 nomeProduto={produtoSelecionado}
                 historico={historico}
                 carregando={carregandoHistorico}
+                produtosCesta={produtosCesta}
                 escuro={escuro}
               />
             </Grid>
@@ -130,15 +127,18 @@ export default function Home() {
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, lg: 5 }}>
-              <ChartIndiceCesta
-                produtos={produtosCesta}
-                escuro={escuro}
-                carregando={carregandoCesta}
-              />
+              <Stack spacing={2}>
+                <CardInflacao produtos={produtosCesta} carregando={carregandoCesta} />
+                <ChartIndiceCesta
+                  produtos={produtosCesta}
+                  escuro={escuro}
+                  carregando={carregandoCesta}
+                />
+              </Stack>
             </Grid>
             <Grid size={{ xs: 12, lg: 7 }}>
               <ChartCestaBasica
-                itens={itensCestaBasica}
+                itens={produtosCesta}
                 escuro={escuro}
                 carregando={carregandoCesta}
               />
@@ -158,8 +158,25 @@ export default function Home() {
           />
         </Stack>
 
-        <ProdutosTable produtos={produtos} carregando={carregando} onLimparFiltros={limparFiltros} />
+        <ProdutosTable
+          produtos={produtos}
+          carregando={carregando}
+          onLimparFiltros={limparFiltros}
+          onAbrirDetalhe={setProdutoDetalhe}
+        />
       </Container>
+
+      <PainelProduto
+        produto={produtoDetalhe}
+        onClose={() => setProdutoDetalhe(null)}
+        onSelecionarProduto={(nome) => {
+          const registro = produtosCesta.find((p) => p.produto === nome);
+          if (registro) setProdutoDetalhe(registro);
+        }}
+        produtosCesta={produtosCesta}
+        variacoes={variacoes}
+        escuro={escuro}
+      />
     </Box>
   );
 }

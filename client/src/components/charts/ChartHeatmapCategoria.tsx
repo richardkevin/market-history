@@ -5,10 +5,13 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Slider from '@mui/material/Slider';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
 import EChart from '@/components/charts/EChart';
+import InfoTitulo from '@/components/InfoTitulo';
 import { chartCores } from '@/lib/utils';
-import { heatmapCategorias } from '@/lib/historico';
+import { heatmapCategorias, rotuloPeriodo, type Granularidade } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartHeatmapCategoriaProps {
@@ -19,8 +22,12 @@ interface ChartHeatmapCategoriaProps {
 
 export default function ChartHeatmapCategoria({ produtos, escuro, carregando }: ChartHeatmapCategoriaProps) {
   const [nDatas, setNDatas] = useState(12);
+  const [granularidade, setGranularidade] = useState<Granularidade>('mes');
 
-  const { datas, categorias } = useMemo(() => heatmapCategorias(produtos), [produtos]);
+  const { datas, categorias } = useMemo(
+    () => heatmapCategorias(produtos, { granularidade }),
+    [produtos, granularidade]
+  );
   const maxDatas = Math.max(4, Math.min(30, datas.length));
   const datasVisiveis = datas.slice(-Math.min(nDatas, maxDatas));
 
@@ -45,7 +52,7 @@ export default function ChartHeatmapCategoria({ produtos, escuro, carregando }: 
         formatter: (p: { value: [number, number, number | null] }) => {
           const [x, y, v] = p.value;
           const cat = categorias[y]?.nome ?? '';
-          const data = datasVisiveis[x] ? `${datasVisiveis[x].split('-').reverse().slice(0, 2).join('/')}` : '';
+          const data = datasVisiveis[x] ? rotuloPeriodo(datasVisiveis[x]) : '';
           const texto =
             v == null
               ? 'sem base comparável'
@@ -60,7 +67,7 @@ export default function ChartHeatmapCategoria({ produtos, escuro, carregando }: 
       grid: { left: 8, right: 96, top: 8, bottom: 48, containLabel: true },
       xAxis: {
         type: 'category' as const,
-        data: datasVisiveis.map((d) => d.split('-').reverse().slice(0, 2).join('/')),
+        data: datasVisiveis.map((d) => rotuloPeriodo(d)),
         splitArea: { show: true },
         axisLabel: { color: cores.muted, fontSize: 10, rotate: 45 },
         axisLine: { show: false },
@@ -107,12 +114,28 @@ export default function ChartHeatmapCategoria({ produtos, escuro, carregando }: 
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5 }}>
-      <Typography variant="h6" gutterBottom>
-        Variação por categoria · encartes recentes
-      </Typography>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 0.5, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <InfoTitulo
+          titulo="Variação por categoria"
+          descricao="Percentual de variação do preço médio da categoria entre um período e o anterior. Verde = mais barato, vermelho = mais caro. Célula vazia = categoria ausente naquele período."
+        />
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={granularidade}
+          onChange={(_, v) => v && setGranularidade(v)}
+        >
+          <ToggleButton value="mes">
+            <Typography variant="caption">Mês</Typography>
+          </ToggleButton>
+          <ToggleButton value="encarte">
+            <Typography variant="caption">Encarte</Typography>
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
       <Stack direction="row" spacing={2} sx={{ mb: 1, alignItems: 'center' }}>
         <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-          Encartes visíveis: {datasVisiveis.length}
+          Períodos visíveis: {datasVisiveis.length}
         </Typography>
         <Slider
           size="small"

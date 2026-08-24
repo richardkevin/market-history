@@ -7,14 +7,17 @@ import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import EChart from '@/components/charts/EChart';
+import InfoTitulo from '@/components/InfoTitulo';
 import { brl, chartCores } from '@/lib/utils';
-import { mediasAnuais, formatarPct } from '@/lib/historico';
+import { mediasAnuais, formatarPct, grupoCesta } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartPrecoAnualProps {
   nomeProduto: string | null;
   historico: Produto[];
   carregando: boolean;
+  /** base completa para o modo default (cesta básica) */
+  produtosCesta: Produto[];
   escuro: boolean;
 }
 
@@ -22,14 +25,27 @@ export default function ChartPrecoAnual({
   nomeProduto,
   historico,
   carregando,
+  produtosCesta,
   escuro,
 }: ChartPrecoAnualProps) {
-  const anuais = useMemo(() => mediasAnuais(historico), [historico]);
+  const modoCesta = nomeProduto == null;
+
+  const anuais = useMemo(() => {
+    if (modoCesta) {
+      return mediasAnuais(
+        produtosCesta.filter((p) => grupoCesta(p.produto)),
+        { porUnidade: true }
+      );
+    }
+    return mediasAnuais(historico);
+  }, [modoCesta, produtosCesta, historico]);
+
   const temClube = anuais.some((a) => a.precoClube != null);
 
   const option = useMemo(() => {
     if (anuais.length === 0) return null;
     const cores = escuro ? chartCores.dark : chartCores.light;
+    const nomeSerieNormal = modoCesta ? 'Cesta básica (média R$/kg·L·un)' : 'Preço médio';
 
     const dadosNormal = anuais.map((a) => ({
       value: Number(a.preco.toFixed(2)),
@@ -42,7 +58,7 @@ export default function ChartPrecoAnual({
 
     const series: Record<string, unknown>[] = [
       {
-        name: 'Preço médio',
+        name: nomeSerieNormal,
         type: 'bar',
         barMaxWidth: 42,
         data: dadosNormal,
@@ -52,13 +68,18 @@ export default function ChartPrecoAnual({
           position: 'top' as const,
           fontSize: 10,
           color: cores.muted,
-          formatter: ({ value }: { value: number }) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+          formatter: ({ value }: { value: number }) =>
+            value.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+              maximumFractionDigits: value >= 100 ? 0 : 2,
+            }),
         },
       },
     ];
     if (temClube) {
       series.push({
-        name: 'Clube (média)',
+        name: modoCesta ? 'Clube da cesta' : 'Clube (média)',
         type: 'bar',
         barMaxWidth: 42,
         data: dadosClube,
@@ -93,11 +114,13 @@ export default function ChartPrecoAnual({
           const yoy = anterior ? ((meta.preco - anterior.preco) / anterior.preco) * 100 : null;
           const linhas = [
             `<b>${meta.ano}</b>`,
-            `${params[0].marker} Média: <b>${brl.format(meta.preco)}</b>`,
+            `${params[0].marker} Média: <b>${brl.format(meta.preco)}</b>${modoCesta ? ' /kg·L/un' : ''}`,
             `Faixa: ${brl.format(meta.precoMin)} – ${brl.format(meta.precoMax)}`,
           ];
-          if (meta.precoClube != null) linhas.push(`🧡 Clube: ${brl.format(meta.precoClube)} em média`);
-          if (yoy != null) linhas.push(`${yoy > 0 ? '▲' : yoy < 0 ? '▼' : '='} ${formatarPct(yoy)} vs. ${anterior!.ano}`);
+          if (meta.precoClube != null)
+            linhas.push(`🧡 Clube: ${brl.format(meta.precoClube)} em média`);
+          if (yoy != null)
+            linhas.push(`${yoy > 0 ? '▲' : yoy < 0 ? '▼' : '='} ${formatarPct(yoy)} vs. ${anterior!.ano}`);
           linhas.push(`<span style="opacity:.6">${meta.nRegistros} registros</span>`);
           return linhas.join('<br/>');
         },
@@ -119,7 +142,7 @@ export default function ChartPrecoAnual({
       },
       series,
     };
-  }, [anuais, temClube, escuro]);
+  }, [anuais, temClube, escuro, modoCesta]);
 
   const resumo = useMemo(() => {
     if (anuais.length < 2) return null;
@@ -133,32 +156,27 @@ export default function ChartPrecoAnual({
       anoAnterior: anterior.ano,
       melhorAno: [...anuais].sort((a, b) => a.preco - b.preco)[0],
       piorAno: [...anuais].sort((a, b) => b.preco - a.preco)[0],
-      datasCobertas: new Set(
-        historico.map((p) => p.data_encarte?.substring(0, 10)).filter(Boolean)
-      ).size,
     };
-  }, [anuais, historico]);
+  }, [anuais]);
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5 }}>
-      <Typography variant="h6" gutterBottom>
-        Comparação anual
-      </Typography>
-      {!nomeProduto ? (
-        <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
-          Selecione um produto para comparar os preços médios de cada ano.
-        </Typography>
-      ) : carregando ? (
+      <InfoTitulo
+        titulo="Comparação anual"
+        descricao={
+          modoCesta
+            ? 'Média por unidade (R$/kg·L·un) dos grupos da cesta básica em cada ano — mostra o ano em que o carrinho estava, em média, mais barato ou caro.'
+            : 'Preço médio do produto selecionado em cada ano-calendário. O tooltip traz a faixa mín–máx do período e a variação vs. o ano anterior.'
+        }
+      />
+      {carregando && !modoCesta ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
           Carregando histórico…
         </Typography>
       ) : option && resumo ? (
         <>
           <Stack direction="row" spacing={0.5} useFlexGap sx={{ mb: 1.5, flexWrap: 'wrap' }}>
-            <Tooltip
-              title={`Preço médio de ${resumo.anoUltimo} vs. ${resumo.anoAnterior}`}
-              placement="top"
-            >
+            <Tooltip title={`Preço médio de ${resumo.anoUltimo} vs. ${resumo.anoAnterior}`} placement="top">
               <Chip
                 size="small"
                 label={`${formatarPct(resumo.yoyUltimo)} em ${String(resumo.anoUltimo).slice(2)}/${String(resumo.anoAnterior).slice(2)}`}
@@ -167,11 +185,7 @@ export default function ChartPrecoAnual({
               />
             </Tooltip>
             <Tooltip title="Variação acumulada do primeiro ao último ano" placement="top">
-              <Chip
-                size="small"
-                variant="outlined"
-                label={`${formatarPct(resumo.pctTotal)} no total`}
-              />
+              <Chip size="small" variant="outlined" label={`${formatarPct(resumo.pctTotal)} no total`} />
             </Tooltip>
             <Tooltip title="Ano com menor preço médio" placement="top">
               <Chip size="small" variant="outlined" label={`mais barato: ${resumo.melhorAno.ano}`} />
@@ -184,7 +198,7 @@ export default function ChartPrecoAnual({
         </>
       ) : (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
-          Sem preços registrados para este produto.
+          Sem preços registrados.
         </Typography>
       )}
     </Paper>

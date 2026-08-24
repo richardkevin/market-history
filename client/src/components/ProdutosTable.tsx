@@ -27,9 +27,11 @@ interface ProdutosTableProps {
   produtos: Produto[];
   carregando: boolean;
   onLimparFiltros: () => void;
+  /** clique numa linha abre o painel de detalhe do produto */
+  onAbrirDetalhe?: (produto: Produto) => void;
 }
 
-export default function ProdutosTable({ produtos, carregando, onLimparFiltros }: ProdutosTableProps) {
+export default function ProdutosTable({ produtos, carregando, onLimparFiltros, onAbrirDetalhe }: ProdutosTableProps) {
   const [pagina, setPagina] = useState(0);
   const [porPagina, setPorPagina] = useState(10);
   const [produtosAnteriores, setProdutosAnteriores] = useState(produtos);
@@ -94,7 +96,12 @@ export default function ProdutosTable({ produtos, carregando, onLimparFiltros }:
                         ? Math.round((1 - (p.preco_clube as number) / (p.preco as number)) * 100)
                         : null;
                       return (
-                        <TableRow key={p.id} hover>
+                        <TableRow
+                      key={p.id}
+                      hover
+                      onClick={() => onAbrirDetalhe?.(p)}
+                      sx={{ cursor: onAbrirDetalhe ? 'pointer' : 'default' }}
+                    >
                           <TableCell>
                             <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
                               <Avatar

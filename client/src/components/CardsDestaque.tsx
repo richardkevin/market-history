@@ -18,7 +18,8 @@ import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import TrendingUpOutlined from '@mui/icons-material/TrendingUpOutlined';
 import TrendingDownOutlined from '@mui/icons-material/TrendingDownOutlined';
 import { brl } from '@/lib/utils';
-import { formatarDataCurta, formatarPct, type Variacao } from '@/lib/historico';
+import { rotuloPeriodo, formatarPct, type Variacao } from '@/lib/historico';
+import InfoTitulo from '@/components/InfoTitulo';
 
 interface CardsDestaqueProps {
   variacoes: Variacao[];
@@ -55,7 +56,10 @@ export default function CardsDestaque({ variacoes, carregando, onSelecionarProdu
           flexWrap: { sm: 'wrap' },
         }}
       >
-        <Typography variant="h6">Destaques do último encarte</Typography>
+        <InfoTitulo
+          titulo="Destaques do último encarte"
+          descricao="Maiores altas e quedas percentuais comparando o registro mais recente de cada produto com o penúltimo. Produtos com mudança de embalagem mostram a variação por kg/L/un."
+        />
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -181,9 +185,9 @@ function CardVariacao({ v, onSelecionarProduto }: CardVariacaoProps) {
             brl.format(v.precoAnterior),
             '→',
             brl.format(v.precoAtual),
-            formatarDataCurta(v.dataAnterior),
+            rotuloPeriodo(v.dataAnterior),
             '→',
-            formatarDataCurta(v.dataAtual),
+            rotuloPeriodo(v.dataAtual),
           ].join(' ')}
         </Typography>
         {v.pctUnitario != null && Math.abs(v.pctUnitario - v.pct) > 0.15 && (

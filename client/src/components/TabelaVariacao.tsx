@@ -17,7 +17,8 @@ import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import { brl } from '@/lib/utils';
-import { formatarDataCurta, formatarPct } from '@/lib/historico';
+import { rotuloPeriodo, formatarPct } from '@/lib/historico';
+import InfoTitulo from '@/components/InfoTitulo';
 import type { Variacao } from '@/lib/historico';
 
 interface TabelaVariacaoProps {
@@ -83,7 +84,10 @@ export default function TabelaVariacao({ variacoes, carregando, onSelecionarProd
         sx={{ px: 2.5, pt: 2.5, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}
         useFlexGap
       >
-        <Typography variant="h6">O que mudou no último encarte</Typography>
+        <InfoTitulo
+          titulo="O que mudou no último encarte"
+          descricao="Compara o preço mais recente de cada produto com o penúltimo registro dele. Clique numa linha para ver a evolução completa no gráfico."
+        />
         {!carregando && (
           <Stack direction="row" spacing={1}>
             <Chip size="small" color="error" variant="outlined" label={`${variacoes.filter((v) => v.pct > 0).length} em alta`} />
@@ -150,7 +154,7 @@ export default function TabelaVariacao({ variacoes, carregando, onSelecionarProd
                       <TableCell align="right">
                         <Typography variant="body2">{brl.format(v.precoAnterior)}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {formatarDataCurta(v.dataAnterior)}
+                          {rotuloPeriodo(v.dataAnterior)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
@@ -165,7 +169,7 @@ export default function TabelaVariacao({ variacoes, carregando, onSelecionarProd
                           )}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" component="div">
-                          {formatarDataCurta(v.dataAtual)}
+                          {rotuloPeriodo(v.dataAtual)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right" sx={{ color: cor }}>
@@ -184,7 +188,7 @@ export default function TabelaVariacao({ variacoes, carregando, onSelecionarProd
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary" noWrap>
-                          {formatarDataCurta(v.dataAnterior)} → {formatarDataCurta(v.dataAtual)}
+                          {rotuloPeriodo(v.dataAnterior)} → {rotuloPeriodo(v.dataAtual)}
                         </Typography>
                       </TableCell>
                     </TableRow>

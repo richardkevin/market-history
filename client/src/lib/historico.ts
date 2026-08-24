@@ -1,4 +1,5 @@
 import type { Produto } from '@/lib/types';
+import { CESTA_BASICA } from '@/lib/utils';
 
 /** Converte "DD/MM/AAAA" em Date local. Retorna null se inválido. */
 export function parseDataBR(data: string | null | undefined): Date | null {
@@ -20,6 +21,21 @@ export function dataReferencia(p: Produto): Date | null {
 export function chaveData(d: Date): string {
   return `${String(d.getFullYear()).padStart(4, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
+
+/** Chave "YYYY-MM" para agregar por mês. */
+export function chaveMes(d: Date): string {
+  return chaveData(d).slice(0, 7);
+}
+
+function dataDeChave(k: string): Date {
+  const [y, m] = k.split('-').map(Number);
+  return new Date(y, (m ?? 1) - 1, 1, 12);
+}
+
+export type Granularidade = 'encarte' | 'mes';
+
+const chavePorGranularidade = (g: Granularidade) => (d: Date) =>
+  g === 'mes' ? chaveMes(d) : chaveData(d);
 
 export interface Unidade {
   quantidade: number;
@@ -71,24 +87,28 @@ export interface PontoPreco {
   precoClubeUnit: number | null;
 }
 
-/** Série temporal de um produto, um ponto por encarte (média se repetir na mesma data), ordenado. */
-export function serieProduto(produtos: Produto[]): PontoPreco[] {
+/** Série temporal de um produto, um ponto por encarte (ou mês), média se repetir, ordenado. */
+export function serieProduto(
+  produtos: Produto[],
+  opts?: { granularidade?: Granularidade }
+): PontoPreco[] {
+  const chave = chavePorGranularidade(opts?.granularidade ?? 'encarte');
   const porData = new Map<string, Produto[]>();
   for (const p of produtos) {
     const d = dataReferencia(p);
     if (!d || p.preco == null) continue;
-    const k = chaveData(d);
+    const k = chave(d);
     (porData.get(k) ?? porData.set(k, []).get(k)!).push(p);
   }
   const media = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   const pontos: PontoPreco[] = [];
-  for (const [iso, grupo] of [...porData.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+  for (const [k, grupo] of [...porData.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     const medida = grupo[grupo.length - 1].medida;
     const preco = media(grupo.map((p) => p.preco as number));
     const clubes = grupo.filter((p) => p.preco_clube != null && p.preco_clube < (p.preco ?? Infinity));
     pontos.push({
-      data: iso,
-      date: new Date(`${iso}T12:00:00`),
+      data: k,
+      date: dataDeChave(k),
       preco,
       precoClube: clubes.length ? Math.min(...clubes.map((p) => p.preco_clube as number)) : null,
       promocao: grupo.some((p) => p.tipo_promocao != null),
@@ -192,16 +212,20 @@ export function variacoesDesdeUltimoEncarte(produtos: Produto[]): Variacao[] {
 }
 
 /**
- * Índice encadeado estilo cesta (base 100): cada encarte compara apenas os
- * produtos que também estavam no encarte anterior (Laspeyres encadeado), então
+ * Índice encadeado estilo cesta (base 100): cada período compara apenas os
+ * produtos que também estavam no anterior (Laspeyres encadeado), então
  * produtos que somem/entram não distorcem a série.
  */
-export function indiceCestaEncadeada(produtos: Produto[]): { data: string; indice: number }[] {
+export function indiceCestaEncadeada(
+  produtos: Produto[],
+  opts?: { granularidade?: Granularidade }
+): { data: string; indice: number }[] {
+  const chave = chavePorGranularidade(opts?.granularidade ?? 'encarte');
   const precosPorData = new Map<string, Map<string, { soma: number; n: number }>>();
   for (const p of produtos) {
     const d = dataReferencia(p);
     if (!d || p.preco == null || !p.produto) continue;
-    const k = chaveData(d);
+    const k = chave(d);
     let dia = precosPorData.get(k);
     if (!dia) {
       dia = new Map();
@@ -251,18 +275,22 @@ export interface VariacaoCategoria {
 }
 
 /**
- * Variação % do preço médio por categoria em cada encarte vs. encarte anterior.
- * Colunas são as datas globais; buracos viram null.
+ * Variação % do preço médio por categoria em cada período vs. anterior.
+ * Colunas são datas (ou meses) globais; buracos viram null.
  */
-export function heatmapCategorias(produtos: Produto[]): {
+export function heatmapCategorias(
+  produtos: Produto[],
+  opts?: { granularidade?: Granularidade }
+): {
   datas: string[];
   categorias: { nome: string; valores: (number | null)[] }[];
 } {
+  const chave = chavePorGranularidade(opts?.granularidade ?? 'encarte');
   const medias = new Map<string, Map<string, { soma: number; n: number }>>();
   for (const p of produtos) {
     const d = dataReferencia(p);
     if (!d || p.preco == null || !p.categoria || p.erro_identificacao) continue;
-    const dataISO = chaveData(d);
+    const dataISO = chave(d);
     let cat = medias.get(p.categoria);
     if (!cat) {
       cat = new Map();
@@ -314,22 +342,38 @@ export interface MediaAnual {
 }
 
 /** Preço médio por ano-calendário, com faixa mín–máx e média do Clube. */
-export function mediasAnuais(produtos: Produto[]): MediaAnual[] {
+export function mediasAnuais(
+  produtos: Produto[],
+  opts?: { porUnidade?: boolean }
+): MediaAnual[] {
+  const porUnidade = opts?.porUnidade ?? false;
+  const valor = (p: Produto) =>
+    porUnidade ? precoPorUnidade(p.preco as number, p.medida) : (p.preco ?? null);
+
   const porAno = new Map<number, { soma: number; min: number; max: number; clubes: number[]; n: number }>();
   for (const p of produtos) {
     const d = dataReferencia(p);
     if (!d || p.preco == null) continue;
+    const preco = valor(p);
+    if (preco == null) continue;
+    const clube =
+      p.preco_clube != null && p.preco_clube < p.preco
+        ? porUnidade
+          ? precoPorUnidade(p.preco_clube, p.medida)
+          : p.preco_clube
+        : null;
+
     const ano = d.getFullYear();
     let celula = porAno.get(ano);
     if (!celula) {
       celula = { soma: 0, min: Infinity, max: -Infinity, clubes: [], n: 0 };
       porAno.set(ano, celula);
     }
-    celula.soma += p.preco;
+    celula.soma += preco;
     celula.n += 1;
-    celula.min = Math.min(celula.min, p.preco);
-    celula.max = Math.max(celula.max, p.preco);
-    if (p.preco_clube != null && p.preco_clube < p.preco) celula.clubes.push(p.preco_clube);
+    celula.min = Math.min(celula.min, preco);
+    celula.max = Math.max(celula.max, preco);
+    if (clube != null) celula.clubes.push(clube);
   }
   return [...porAno.entries()]
     .sort((a, b) => a[0] - b[0])
@@ -345,10 +389,53 @@ export function mediasAnuais(produtos: Produto[]): MediaAnual[] {
     }));
 }
 
+/** Grupo da cesta básica ao qual o produto pertence (ou null). */
+export function grupoCesta(nomeProduto: string): string | null {
+  const nome = nomeProduto.toUpperCase();
+  for (const item of CESTA_BASICA) {
+    if (nome.includes(item)) return item;
+  }
+  return null;
+}
+
+export interface SerieGrupo {
+  grupo: string;
+  pontos: { date: Date; data: string; precoUnit: number | null }[];
+}
+
+/** Série temporal de preço médio (por unidade) para cada grupo da cesta básica. */
+export function seriesCestaBasica(
+  produtos: Produto[],
+  opts?: { granularidade?: Granularidade }
+): SerieGrupo[] {
+  const grupos = new Map<string, Produto[]>();
+  for (const p of produtos) {
+    const g = grupoCesta(p.produto);
+    if (!g) continue;
+    (grupos.get(g) ?? grupos.set(g, []).get(g)!).push(p);
+  }
+  return [...grupos.entries()]
+    .map(([grupo, lista]) => ({
+      grupo,
+      pontos: serieProduto(lista, opts)
+        .map((pt) => ({ date: pt.date, data: pt.data, precoUnit: pt.precoUnit }))
+        .filter((pt) => pt.precoUnit != null),
+    }))
+    .filter((s) => s.pontos.length >= 2)
+    .sort((a, b) => a.grupo.localeCompare(b.grupo, 'pt-BR'));
+}
+
 export const formatarPct = (v: number) =>
   `${v > 0 ? '+' : ''}${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 
-export const formatarDataCurta = (iso: string) => {
-  const [, mes, dia] = iso.split('-');
+const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+/** "2024-05" → "mai/24" · "2024-05-12" → "12/05". */
+export function rotuloPeriodo(k: string): string {
+  if (k.length === 7) {
+    const [ano, mes] = k.split('-');
+    return `${MESES_CURTOS[Number(mes) - 1]}/${ano.slice(2)}`;
+  }
+  const [, mes, dia] = k.split('-');
   return `${dia}/${mes}`;
-};
+}
