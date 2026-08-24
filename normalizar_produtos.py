@@ -17,6 +17,9 @@ UNIDADES = {"g", "kg", "mg", "ml", "cl", "cm", "mm", "l", "un", "unids"}
 TAMANHOS = {"p", "m", "g", "gg", "xg", "xxg", "rn", "tp"}
 ACRONIMOS = {"sos", "s.o.s", "tv", "pa", "p.a", "ii", "iii", "iv", "vi", "hd"}
 
+RE_VOLUME_FIM = re.compile(r"\s*\d+(?:[.,]\d+)?\s*(?:ml|l|kg|g|un)\s*$", re.IGNORECASE)
+RE_MARCADOR_OUTLIER = re.compile(r"\[Outlier:[^\]]*\]\s*")
+
 MARCA_FIX = {
     "n/a": None,
     "na": None,
@@ -214,6 +217,289 @@ FRASE_FIX = {
     "Azeite Extravirgem O-Live ou 400ml": "Azeite Extravirgem O-Live ou Gallo 400ml",
 }
 
+# Preço de unidade explícito informado pelo encarte (ex.: "Cada unidade sai por 2,09").
+# Exige menção a unidade para não pegar notas de conteúdo ("embalagem 1kg sai por")
+# nem promos de volume ("Leve 1 Pague 750ml").
+RE_SAI_POR_UNIDADES = [
+    re.compile(r"(?:cada\s+)?uni[dv](?:ade)?s?\.?,?\s+sai\w*\s+por\s+(?:R\$\s*)?([\d.,]+)", re.I),
+    re.compile(r"pre[çc]o\s+unit[áa]rio\b[\w\s]{0,30}?sai\w*\s+por\s+(?:R\$\s*)?([\d.,]+)", re.I),
+    re.compile(r"sai\w*\s+por\s+(?:R\$\s*)?([\d.,]+)\s*a\s*unidad", re.I),
+]
+MARCADOR_DIVISAO = "[Divisão embalagem]"
+VOLUME_PROMO_RX = re.compile(r"\bp?ague?\s+\d+[.,]?\d*\s*(ml|l\b|litro)", re.I)
+RE_LEVE_PAGUE = re.compile(r"\bleve\s+(\d{1,2})\s+pague\s+(\d{1,2})\b", re.I)
+# contagem declarada na embalagem: "c/ 6 Unids.", "Pack c/ 18 Unids.", "Kit 3 Unids."
+RE_N_EMBALAGEM = re.compile(r"(?:c/\s*)?(\d{1,2})\s*unids?\b", re.I)
+RE_COUNT_MEDIDA = re.compile(r"c?/?\s*\d{1,2}\s*unids?\b\.?|leve\s+\d{1,2}\s+pague\s+\d{1,2}", re.I)
+RE_PALAVRA_PACK = re.compile(r"\b(?:pack|kit|cartela)\b", re.I)
+
+
+def limpar_medida_multipack(medida):
+    """Remove a contagem do pack da medida (ex.: 'C/4 Unids.' -> None,
+    'Pack c/ 18 Unids. 350ml' -> '350ml') para o cliente não dividir 2x."""
+    if not medida:
+        return medida
+    novo = RE_COUNT_MEDIDA.sub(" ", medida)
+    novo = RE_PALAVRA_PACK.sub(" ", novo)
+    novo = re.sub(r"\(\s*\)", " ", novo)
+    novo = limpar_espacos(novo).strip(",;/-")
+    return novo or None
+
+
+def parse_preco_br(s):
+    try:
+        return float(s.replace(".", "").replace(",", ".")) if "," in s else float(s)
+    except ValueError:
+        return None
+
+
+def dividir_precos_embalagem(conn):
+    """Divide preco (e preco_clube proporcional) quando o encarte informa o
+    preço por unidade de um multipack ex.: embalagem com 6 lámens por R$ 12,54,
+    "cada unid. sai por 2,09" -> preco vira 2,09 e a observacao documenta a troca."""
+    rows = conn.execute(
+        "SELECT id, produto, preco, preco_clube, observacao, tipo_promocao "
+        "FROM produtos WHERE tipo_promocao LIKE '%sai por%' OR observacao LIKE '%sai por%'"
+    ).fetchall()
+
+    backup = DB.with_suffix(".precos_embalagem.backup.db")
+    if not backup.exists():
+        shutil.copy2(DB, backup)
+        print(f"Backup dedicado: {backup}")
+
+    stats = Counter()
+    updates = []
+    for rid, prod, preco, clube, obs, promo in rows:
+        if preco is None or (obs and MARCADOR_DIVISAO in obs):
+            continue
+        texto = f"{obs or ''} {promo or ''}"
+        if VOLUME_PROMO_RX.search(texto):
+            continue
+        m = next((mm for rx in RE_SAI_POR_UNIDADES for mm in [rx.search(texto)] if mm), None)
+        if not m:
+            continue
+        unit = parse_preco_br(m.group(1))
+        if not unit or unit <= 0 or unit >= preco * 0.98:
+            continue
+        n = preco / unit
+        if not (2 <= n <= 60) or abs(n - round(n)) > max(0.08, n * 0.03):
+            continue
+        n_int = round(n)
+        novo_obs = (
+            f"{MARCADOR_DIVISAO} embalagem c/ {n_int} unids.: R$ {preco:.2f} -> R$ {unit:.2f}. "
+            + (obs or "")
+        ).strip()
+        novo_clube = round(clube / n_int, 2) if clube is not None else None
+        updates.append((round(unit, 2), novo_clube, novo_obs[:1000], rid))
+        stats[f"dividido_por_{n_int}"] += 1
+        print(f"  divisao: {prod[:45]} | {preco:.2f}/{n_int} = {unit:.2f}"
+              + (f" (clube {clube:.2f} -> {novo_clube:.2f})" if clube is not None else ""))
+
+    if updates:
+        with conn:
+            conn.executemany(
+                "UPDATE produtos SET preco=?, preco_clube=?, observacao=? WHERE id=?",
+                updates,
+            )
+    print(f"Registros com preco dividido: {len(updates)}")
+    return len(updates)
+
+
+def corrigir_medida_divididas(conn):
+    """Registros já divididos cuja medida ainda traz a contagem do pack
+    ('C/4 Unids.') fariam o cliente dividir o preço 2x — limpa a medida."""
+    rows = conn.execute(
+        "SELECT id, medida FROM produtos WHERE observacao LIKE ? AND medida IS NOT NULL",
+        (MARCADOR_DIVISAO + "%",),
+    ).fetchall()
+    updates = []
+    for rid, med in rows:
+        nova = limpar_medida_multipack(med)
+        if nova != med:
+            updates.append((nova, rid))
+            print(f"  medida corrigida: '{med}' -> '{nova}'")
+    if updates:
+        with conn:
+            conn.executemany("UPDATE produtos SET medida=? WHERE id=?", updates)
+    print(f"Medidas de registros divididos corrigidas: {len(updates)}")
+    return len(updates)
+
+
+def dividir_multipacks_por_nome(conn):
+    """Terceira passada: multipacks sem preço unitário informado, mas com a
+    quantidade declarada no próprio nome/medida ('Pack c/ 6 Unids.', 'Kit 3
+    Unids.') ou no promo 'Leve N Pague M'. Valida contra o mínimo histórico
+    do próprio produto para não dividir preços que já eram unitários."""
+    rows = conn.execute(
+        "SELECT id, produto, medida, preco, preco_clube, observacao, tipo_promocao "
+        "FROM produtos WHERE erro_identificacao=0"
+    ).fetchall()
+    stats = Counter()
+    updates = []
+    for rid, prod, med, preco, clube, obs, promo in rows:
+        if preco is None or (obs and MARCADOR_DIVISAO in obs):
+            continue
+        texto_promo = f"{promo or ''} {obs or ''}"
+        low = texto_promo.lower()
+        if "sai por" in low or VOLUME_PROMO_RX.search(texto_promo):
+            continue
+        n = None
+        origem_leve = False
+        m_nome = RE_N_EMBALAGEM.search(f"{prod or ''} {med or ''}")
+        if m_nome:
+            n = int(m_nome.group(1))
+        else:
+            m_leve = RE_LEVE_PAGUE.search(texto_promo)
+            if m_leve and int(m_leve.group(2)) >= 2:
+                n = int(m_leve.group(1))
+                origem_leve = True
+        if not n or not (2 <= n <= 24):
+            continue
+        irmaos = conn.execute(
+            "SELECT id, preco, COALESCE(observacao,''), "
+            "COALESCE(produto,'')||' '||COALESCE(medida,''), COALESCE(tipo_promocao,'') "
+            "FROM produtos WHERE produto=? AND id<>? AND preco IS NOT NULL",
+            (prod, rid),
+        ).fetchall()
+        if len(irmaos) < 2:
+            continue
+        # só divide quando a família é mista: algum irmão já foi dividido
+        # (marcado) ou algum irmão não declara quantidade — senão todos são
+        # consistentemente pack e a série bruta já é comparável
+        tem_marcado = any(MARCADOR_DIVISAO in o[2] for o in irmaos)
+        tem_livre = any(
+            not RE_N_EMBALAGEM.search(o[3]) and not RE_LEVE_PAGUE.search(o[4])
+            for o in irmaos
+        )
+        if not (tem_marcado or tem_livre):
+            continue
+        smin = min(o[1] for o in irmaos)
+        if smin <= 0.5:
+            continue
+        unit = round(preco / n, 2)
+        piso = (0.60 if origem_leve else 0.45) * smin
+        if not (piso <= unit <= 2.5 * smin):
+            stats["rejeitado"] += 1
+            print(f"  rejeitado: {prod[:40]} | {preco:.2f}/{n}={unit:.2f} fora do mínimo {smin:.2f}")
+            continue
+        novo_obs = (
+            f"{MARCADOR_DIVISAO} embalagem c/ {n} unids. (qtd. no nome/embalagem): "
+            f"R$ {preco:.2f} -> R$ {unit:.2f}. " + (obs or "")
+        ).strip()
+        novo_clube = round(clube / n, 2) if clube is not None else None
+        updates.append((unit, novo_clube, limpar_medida_multipack(med), novo_obs[:1000], rid))
+        stats[f"dividido_por_{n}"] += 1
+        print(f"  divisao: {prod[:45]} | {preco:.2f}/{n} = {unit:.2f} (min sibs {smin:.2f})")
+
+    if updates:
+        with conn:
+            conn.executemany(
+                "UPDATE produtos SET preco=?, preco_clube=?, medida=?, observacao=? WHERE id=?",
+                updates,
+            )
+    print(f"Divisões por quantidade no nome/embalagem: {len(updates)}")
+    return len(updates)
+
+
+# O nome sem marca/rótulo mescla produtos distintos (Casillero x Sangue de
+# Boi, Buchanan's x White Horse, Tio João x Carreteiro...) — o histórico de
+# preço só faz sentido por rótulo completo.
+STOP_TOKEN_MARCA = {"ou", "e", "y", "de", "do", "da", "dos", "das", "del", "the"}
+
+
+def _tokens_marca_fora_do_nome(produto, marca):
+    """Palavras da marca que ainda não estão no nome do produto."""
+    pl = produto.lower()
+    fora = []
+    for palavra in re.split(r"[\s/,]+", marca.strip()):
+        low = palavra.lower()
+        if len(low) >= 2 and low not in STOP_TOKEN_MARCA and low not in pl:
+            fora.append(palavra)
+    return fora
+
+
+def completar_nomes_com_marca(conn):
+    """Nome genérico (ex.: 'Vinho 750ml', 'Whisky 1 Litro', 'Arroz 5kg')
+    mescla rótulos distintos — vira 'outlier' falso ao comparar marcas de
+    faixas de preço diferentes. Reconstrói o nome completo inserindo antes da
+    medida os tokens da marca que faltam. Registros marcados como outlier sob
+    o nome genérico são liberados para reavaliação com as famílias por rótulo."""
+    rows = conn.execute(
+        """SELECT id, produto, marca, observacao, erro_identificacao FROM produtos
+           WHERE preco IS NOT NULL AND marca IS NOT NULL AND marca != ''
+             AND produto IS NOT NULL AND produto != ''"""
+    ).fetchall()
+    renomes, liberados = [], []
+    for rid, prod, marca, obs, erro in rows:
+        faltam = _tokens_marca_fora_do_nome(prod, marca)
+        if not faltam:
+            continue
+        m = RE_VOLUME_FIM.search(prod)
+        novo = (
+            f"{prod[:m.start()].rstrip()} {' '.join(faltam)} {m.group().strip()}"
+            if m
+            else f"{prod} {' '.join(faltam)}"
+        )
+        novo = re.sub(r"\s+", " ", novo).strip()
+        renomes.append((novo, rid))
+        if erro and obs and "[outlier:" in obs.lower():
+            limpo = RE_MARCADOR_OUTLIER.sub("", obs).strip()
+            liberados.append((limpo or None, 0, rid))
+        if len(renomes) <= 30:
+            print(f"  nome completo: {prod!r} + {marca!r} -> {novo!r}")
+
+    with conn:
+        conn.executemany("UPDATE produtos SET produto=? WHERE id=?", renomes)
+        conn.executemany(
+            "UPDATE produtos SET observacao=?, erro_identificacao=? WHERE id=?",
+            liberados,
+        )
+    print(f"Nomes completados com a marca: {len(renomes)}")
+    return len(renomes)
+
+
+def marcar_outliers_sem_nota(conn):
+    """Preços muito acima do mínimo do mesmo produto sem nenhuma nota de
+    promoção/embalagem que explique — provável embalagem coletiva não
+    documentada ou produto distinto mesclado no mesmo nome.
+    Marca erro_identificacao=1 para revisão manual (some dos gráficos)."""
+    rows = conn.execute(
+        """
+        WITH stats AS (
+          SELECT produto, MIN(preco) mn, COUNT(*) n
+          FROM produtos WHERE preco IS NOT NULL AND erro_identificacao=0
+          GROUP BY produto HAVING n>=3 AND mn>0
+        )
+        SELECT p.id, p.produto, p.preco, s.mn,
+               COALESCE(p.tipo_promocao,'')||' '||COALESCE(p.observacao,''),
+               COALESCE(p.observacao,'')
+        FROM produtos p JOIN stats s
+          ON s.produto=p.produto AND p.preco>s.mn*3.5
+        """
+    ).fetchall()
+    updates = []
+    for rid, prod, preco, mn, texto, obs in rows:
+        low = texto.lower()
+        if MARCADOR_DIVISAO in texto or "sai por" in low or RE_LEVE_PAGUE.search(texto):
+            continue
+        if "[outlier:" in low:
+            continue
+        novo_obs = (
+            f"[Outlier: R$ {preco:.2f} vs min R$ {mn:.2f} do mesmo produto, sem nota "
+            f"de embalagem/promo — precisa revisão] " + obs
+        ).strip()
+        updates.append((novo_obs[:1000], rid))
+        print(f"  marcado: id={rid} {prod[:45]} | R$ {preco:.2f} vs min R$ {mn:.2f}")
+
+    if updates:
+        with conn:
+            conn.executemany(
+                "UPDATE produtos SET erro_identificacao=1, observacao=? WHERE id=?",
+                updates,
+            )
+    print(f"Registros marcados para revisão: {len(updates)}")
+    return len(updates)
+
 
 def padronizar_variacoes(produto):
     for rx, repl in SUBSTITUICOES:
@@ -374,14 +660,9 @@ def main():
             prod_novo = prod_novo[:-3] + " 1kg"
             stats["kg_convertido_1kg"] += 1
 
-        if marca_nova:
-            familias = dividir_familias(marca_nova)
-            if len(familias) == 1 and familias[0].casefold() not in PALAVRAS_GENERICAS:
-                prod_tentativa, ok = remover_frase(prod_novo, familias[0])
-                if ok:
-                    prod_novo = prod_tentativa
-                    stats["marca_removida_do_nome"] += 1
-        else:
+        if not marca_nova:
+            # marca ausente na coluna: infere por vocabulário conhecido e
+            # preenche a coluna — mas mantém o rótulo no nome (nome completo)
             encontradas = {}
             for rx, frase, cf in vocab_rx:
                 ms = rx.findall(prod_novo)
@@ -389,11 +670,8 @@ def main():
                     encontradas.setdefault(cf, frase)
             if len(encontradas) == 1:
                 cf, frase = next(iter(encontradas.items()))
-                prod_tentativa, ok = remover_frase(prod_novo, frase)
-                if ok:
-                    prod_novo = prod_tentativa
-                    novas_marcas[_id] = display[cf]
-                    stats["marca_preenchida"] += 1
+                novas_marcas[_id] = display[cf]
+                stats["marca_preenchida"] += 1
 
         med_nova = normalizar_medida(med)
 
@@ -420,6 +698,11 @@ def main():
         )
         n = unificar_anagramas(conn)
         n += unificar_caso(conn)
+    dividir_precos_embalagem(conn)
+    corrigir_medida_divididas(conn)
+    dividir_multipacks_por_nome(conn)
+    completar_nomes_com_marca(conn)
+    marcar_outliers_sem_nota(conn)
     conn.close()
 
     total = len(rows)

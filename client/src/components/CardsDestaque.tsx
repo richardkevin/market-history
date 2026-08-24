@@ -37,7 +37,9 @@ export default function CardsDestaque({ variacoes, carregando, onSelecionarProdu
   const [expandido, setExpandido] = useState(false);
 
   const cards = useMemo(() => {
-    const validas = variacoes.filter((v) => v.pctUnitario != null || !v.mudouEmbalagem);
+    const validas = variacoes.filter(
+      (v) => !v.suspeito && (v.pctUnitario != null || !v.mudouEmbalagem)
+    );
     const altas = [...validas].sort((a, b) => b.pct - a.pct).slice(0, N_CARDS);
     const quedas = [...validas].sort((a, b) => a.pct - b.pct).slice(0, N_CARDS);
     return modo === 'altas' ? altas : quedas;
@@ -58,7 +60,7 @@ export default function CardsDestaque({ variacoes, carregando, onSelecionarProdu
       >
         <InfoTitulo
           titulo="Destaques do último encarte"
-          descricao="Maiores altas e quedas percentuais comparando o registro mais recente de cada produto com o penúltimo. Produtos com mudança de embalagem mostram a variação por kg/L/un."
+          descricao="Maiores altas e quedas percentuais comparando o registro mais recente de cada produto com o penúltimo. Produtos com mudança de embalagem mostram a variação por kg/L/un; saltos extremos sem base comparável (provável embalagem coletiva ou erro de leitura) ficam fora do ranking."
         />
         <ToggleButtonGroup
           size="small"

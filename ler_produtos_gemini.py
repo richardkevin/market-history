@@ -27,7 +27,7 @@ SUPERMERCADO_PADRAO = "prezunic"
 
 
 class ProdutoExtraido(BaseModel):
-    produto: str = Field(description="Nome do produto completo e padronizado (ex: CONTRAFILÉ BOVINO MATURATTA, CERVEJA ANTARCTICA SUBZERO, SABÃO EM PÓ OMO)")
+    produto: str = Field(description="Nome do produto completo e padronizado, SEMPRE incluindo marca/rótulo quando visível (ex: CONTRAFILÉ BOVINO MATURATTA, CERVEJA ANTARCTICA SUBZERO, SABÃO EM PÓ OMO). Para bebidas (vinhos, cervejas, destilados) NUNCA use nome genérico: escreva 'VINHO CASILLERO DEL DIABLO CABERNET SAUVIGNON 750ML', não 'VINHO 750ML'")
     marca: Optional[str] = Field(default=None, description="Marca do produto (ex: Friboi, Seara, OMO, Antarctica, Personal)")
     medida: Optional[str] = Field(default=None, description="Litragem, peso ou unidade (ex: 1,6kg, 473ml, peça kg, 1kg, folha dupla 20m leve 12 pague 11)")
     preco: Optional[float] = Field(default=None, description="Preço normal / sem desconto de clube (ex: 59.99, 4.39, 21.29)")
@@ -50,7 +50,7 @@ Analise a imagem com altíssima atenção aos detalhes visuais e de layout.
 INSTRUÇÕES:
 1. Identifique TODOS os produtos anunciados na imagem.
 2. Para cada produto, associe com precisão:
-   - Nome completo do produto
+   - Nome completo do produto, incluindo marca/rótulo (em bebidas como vinhos e cervejas o nome sem a marca é inútil para comparar preços)
    - Marca (se identificável)
    - Litragem / Peso / Embalagem / Medida (ex: 473ml, 1,6kg, kg, pacote 500g)
    - Preço regular / sem desconto

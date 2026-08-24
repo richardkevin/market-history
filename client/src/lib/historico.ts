@@ -141,6 +141,8 @@ export interface Variacao {
   mudouEmbalagem: boolean;
   /** variação % do preço por unidade (queda disfarçada de embalagem menor) */
   pctUnitario: number | null;
+  /** salto extremo sem base unitária comparável (provável pack/erro de OCR) */
+  suspeito: boolean;
 }
 
 function agrupaPorProduto(produtos: Produto[]): Map<string, Produto[]> {
@@ -187,6 +189,7 @@ export function variacoesDesdeUltimoEncarte(produtos: Produto[]): Variacao[] {
     const unAtual = extrairUnidade(atual.medida);
     const unAnterior = extrairUnidade(anterior.p.medida);
     const mesmoBase = unAtual && unAnterior && unAtual.base === unAnterior.base;
+    const pct = ((precoAtual - precoAnterior) / precoAnterior) * 100;
     resultado.push({
       produto: nome,
       marca: atual.marca,
@@ -196,7 +199,7 @@ export function variacoesDesdeUltimoEncarte(produtos: Produto[]): Variacao[] {
       precoAtual,
       precoClubeAtual: atual.preco_clube ?? null,
       delta: precoAtual - precoAnterior,
-      pct: ((precoAtual - precoAnterior) / precoAnterior) * 100,
+      pct,
       dataAnterior: anterior.iso,
       dataAtual: isoAtual,
       mudouEmbalagem: Boolean(mesmoBase && unAtual!.quantidade !== unAnterior!.quantidade),
@@ -206,6 +209,7 @@ export function variacoesDesdeUltimoEncarte(produtos: Produto[]): Variacao[] {
               (precoAnterior / unAnterior!.quantidade)) *
             100
           : null,
+      suspeito: !mesmoBase && Math.abs(pct) > 150,
     });
   }
   return resultado;

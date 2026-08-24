@@ -37,7 +37,7 @@ export interface ProdutoFiltro {
 
 export function buscarProdutos(filtros: ProdutoFiltro = {}): Produto[] {
   const db = getDb();
-  let query = 'SELECT * FROM produtos WHERE 1=1';
+  let query = 'SELECT * FROM produtos WHERE erro_identificacao = 0';
   const params: unknown[] = [];
 
   const termosProduto = Array.isArray(filtros.produto)
