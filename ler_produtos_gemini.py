@@ -2,7 +2,7 @@
 """Analisa imagens de encartes/fotos do Prezunic usando Google Gemini Multimodal.
 
 Extrai produtos, precos (normal e clube), medidas e condicoes com precisao.
-Salva no SQLite (prezunic_produtos.db) e em produtos_extraidos_gemini.json.
+Salva no SQLite (encartes_produtos.db) e em produtos_extraidos_gemini.json.
 """
 
 import os
@@ -20,7 +20,7 @@ MAX_RETRIES = 5
 RETRY_DELAY = 5
 DELAY_ENTRE_REQUESTS = 4.5  # segundos (~13 RPM, margem para 15 RPM do free tier)
 
-PASTA_IMGS = "fotos_prezunic"
+PASTA_IMGS = "encartes_prezunic"
 BANCO_DADOS = "encartes_produtos.db"
 MODELO_PADRAO = "gemini-3.1-flash-lite"
 SUPERMERCADO_PADRAO = "prezunic"

@@ -22,7 +22,7 @@ from datetime import date
 
 BANCO_DADOS = "encartes_produtos.db"
 BASE_API = "https://www.prezunic.com.br/api/catalog_system/pub/products/search"
-PAGINA_TAMANHO = 25
+PAGINA_TAMANHO = 50
 MAX_RETRIES = 4
 RETRY_DELAY = 3.0
 DELAY_ENTRE_PAGINAS = 2.0
@@ -40,6 +40,34 @@ FONTES = {
     },
     "carnes-e-aves": {
         "caminho": "/carnes-e-aves",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "mercearia": {
+        "caminho": "/mercearia",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "hortifruti": {
+        "caminho": "/hortifruti",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "refrigerante": {
+        "caminho": "/bebida-nao-alcoolica/refrigerante",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "cerveja": {
+        "caminho": "/bebida-alcoolica/cerveja",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "vinhos": {
+        "caminho": "/bebida-alcoolica/vinhos-e-espumantes",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "frios-e-laticinios": {
+        "caminho": "/frios-e-laticinios",
+        "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
+    },
+    "padaria": {
+        "caminho": "/padaria/pao",
         "params": {"map": "c,c", "O": "OrderByTopSaleDESC"},
     },
 }
@@ -97,7 +125,10 @@ def extrair(p, hoje):
         preco = preco_original if preco_original else preco_venda
         preco_clube = preco_venda if preco_venda else None
 
-    link = p.get("link") or f"https://www.prezunic.com.br/{p.get('linkText') or p.get('productId')}/p"
+    link = (
+        p.get("link")
+        or f"https://www.prezunic.com.br/{p.get('linkText') or p.get('productId')}/p"
+    )
     produto_id = p.get("productId")
     imagem = (it.get("images") or [{}])[0].get("imageUrl") or f"id-{produto_id}"
 
@@ -109,7 +140,9 @@ def extrair(p, hoje):
         "medida": it.get("complementName") or None,
         "preco": preco,
         "preco_clube": preco_clube,
-        "tipo_promocao": f"-15%" if preco_clube and preco and preco_clube < preco else None,
+        "tipo_promocao": (
+            f"-15%" if preco_clube and preco and preco_clube < preco else None
+        ),
         "limite": None,
         "data_encarte": hoje,
         "observacao": f"Origem: {link} | produtoId {produto_id}",
@@ -119,7 +152,7 @@ def extrair(p, hoje):
     }
 
 
-DESLOC_MAXIMO = 2000
+DESLOC_MAXIMO = 2500
 
 
 def coletar(conn, fonte, paginas_max=None):
@@ -147,30 +180,38 @@ def coletar(conn, fonte, paginas_max=None):
             falhas_seguidas = 0
         except Exception as e:
             falhas_seguidas += 1
-            if falhas_seguidas >= MAX_RETRIES or (paginas_max is not None and paginas_ok >= paginas_max):
+            if falhas_seguidas >= MAX_RETRIES or (
+                paginas_max is not None and paginas_ok >= paginas_max
+            ):
                 print(f"  Fonte '{fonte}': falha ao paginar em {desloc}: {e}")
                 break
             print(f"  Fonte '{fonte}': retry paginação {desloc}: {e}")
             time.sleep(RETRY_DELAY)
             continue
 
-        novo = 0
+        novos_ids = 0
+        novos_registros = 0
         for p in dados:
             prod_id = p.get("productId")
             if prod_id in vistos:
                 continue
             vistos.add(prod_id)
+            novos_ids += 1
             row = extrair(p, date.today().strftime("%d/%m/%Y"))
             if row["texto_ocr"] in existentes:
                 continue
             registros.append(row)
-            novo += 1
+            novos_registros += 1
             existentes.add(row["texto_ocr"])
 
-        print(f"  Fonte '{fonte}' pág {paginas_ok + 1} (offset {desloc}): +{novo} novos", flush=True)
+        print(
+            f"  Fonte '{fonte}' pág {paginas_ok + 1} (offset {desloc}): "
+            f"+{novos_registros} registros | {novos_ids} produtos inéditos na execução",
+            flush=True,
+        )
         paginas_ok += 1
 
-        if len(dados) < PAGINA_TAMANHO or novo == 0:
+        if len(dados) < PAGINA_TAMANHO or novos_ids == 0:
             break
         desloc += PAGINA_TAMANHO
         time.sleep(DELAY_ENTRE_PAGINAS)
@@ -191,9 +232,20 @@ def inserir(conn, registros):
         """,
         [
             (
-                r["imagem"], r["supermercado"], r["produto"], r["marca"], r["medida"],
-                r["preco"], r["preco_clube"], r["tipo_promocao"], r["limite"], r["data_encarte"],
-                r["observacao"], r["texto_ocr"], r["erro_identificacao"], r["categoria"],
+                r["imagem"],
+                r["supermercado"],
+                r["produto"],
+                r["marca"],
+                r["medida"],
+                r["preco"],
+                r["preco_clube"],
+                r["tipo_promocao"],
+                r["limite"],
+                r["data_encarte"],
+                r["observacao"],
+                r["texto_ocr"],
+                r["erro_identificacao"],
+                r["categoria"],
             )
             for r in registros
         ],
@@ -203,16 +255,31 @@ def inserir(conn, registros):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Coleta produtos do catálogo online do Prezunic (VTEX).")
-    parser.add_argument("--tudo", action="store_true", help="Percorre todas as páginas de todas as fontes (pode ser lento).")
-    parser.add_argument("--paginas", type=int, default=2, help="Máximo de páginas por fonte (default: 2 = ~50 produtos por fonte).")
+    parser = argparse.ArgumentParser(
+        description="Coleta produtos do catálogo online do Prezunic (VTEX)."
+    )
+    parser.add_argument(
+        "--tudo",
+        action="store_true",
+        help="Percorre todas as páginas de todas as fontes (pode ser lento).",
+    )
+    parser.add_argument(
+        "--paginas",
+        type=int,
+        default=2,
+        help="Máximo de páginas por fonte (default: 2 = ~50 produtos por fonte).",
+    )
     parser.add_argument("--fontes", help="Subconjunto de fontes: ofertas,carnes-e-aves")
     args = parser.parse_args()
 
     import sqlite3
 
     conn = sqlite3.connect(BANCO_DADOS)
-    fontes = [f.strip() for f in args.fontes.split(",")] if args.fontes else ["ofertas", "carnes-e-aves"]
+    fontes = (
+        [f.strip() for f in args.fontes.split(",")]
+        if args.fontes
+        else ["ofertas", "carnes-e-aves"]
+    )
 
     total = 0
     for fonte in fontes:
