@@ -224,7 +224,7 @@ export default function ChartVariacaoCesta({ itens, escuro, carregando, slug }: 
   const okMes = optionMes != null;
 
   return (
-    <Paper variant="outlined" id={slug} sx={{ p: 2.5 }}>
+    <Paper variant="outlined" id={slug} sx={{ p: 2.5, height: '100%' }}>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 1, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <InfoTitulo
           titulo="Variação da cesta básica"
