@@ -3,14 +3,13 @@
 import { useMemo, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import EChart from '@/components/charts/EChart';
 import InfoTitulo from '@/components/InfoTitulo';
 import { chartCores } from '@/lib/utils';
-import { indiceCestaEncadeada, type Granularidade } from '@/lib/historico';
+import { indiceCestaEncadeada, rotuloPeriodo, type Granularidade } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartIndiceCestaProps {
@@ -25,6 +24,21 @@ export default function ChartIndiceCesta({ produtos, escuro, carregando }: Chart
     () => indiceCestaEncadeada(produtos, { granularidade }),
     [produtos, granularidade]
   );
+
+  const resumo = useMemo(() => {
+    if (serie.length < 2) return null;
+    const primeiro = serie[0];
+    const anterior = serie[serie.length - 2];
+    const ultimo = serie[serie.length - 1];
+    return {
+      total: ultimo.indice - 100,
+      ultimaVariacao: (ultimo.indice / anterior.indice - 1) * 100,
+      base: rotuloPeriodo(primeiro.data),
+      ultimoPeriodo: rotuloPeriodo(ultimo.data),
+      intervalo: `${rotuloPeriodo(ultimo.data)} vs. ${rotuloPeriodo(anterior.data)}`,
+      nPeriodos: serie.length,
+    };
+  }, [serie]);
 
   const option = useMemo(() => {
     if (serie.length < 2) return null;
@@ -112,10 +126,10 @@ export default function ChartIndiceCesta({ produtos, escuro, carregando }: Chart
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5 }}>
-      <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 0.5, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 1, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <InfoTitulo
           titulo="Índice de preços · cesta do encarte"
-          descricao="Mini-IPCA caseiro: base 100 no primeiro período. Cada ponto compara apenas os produtos presentes em dois períodos consecutivos (índice encadeado), então itens que somem ou entram não distorcem a série."
+          descricao="Evolução do nível geral de preços da cesta (mini-IPCA caseiro). Base 100 no primeiro período; só compara períodos consecutivos com os produtos comuns aos dois, então itens que somem ou entram não distorcem a série."
         />
         <ToggleButtonGroup
           size="small"
@@ -124,24 +138,49 @@ export default function ChartIndiceCesta({ produtos, escuro, carregando }: Chart
           onChange={(_, v) => v && setGranularidade(v)}
         >
           <ToggleButton value="mes">
-            <Typography variant="caption">Mês</Typography>
+            <Typography variant="caption">Por mês</Typography>
           </ToggleButton>
           <ToggleButton value="encarte">
-            <Typography variant="caption">Encarte</Typography>
+            <Typography variant="caption">Por encarte</Typography>
           </ToggleButton>
         </ToggleButtonGroup>
-        {serie.length >= 2 && (
-          <Chip
-            size="small"
-            variant={serie[serie.length - 1].indice >= 100 ? 'filled' : 'outlined'}
-            color={serie[serie.length - 1].indice > 101 ? 'error' : serie[serie.length - 1].indice < 99 ? 'success' : 'default'}
-            label={`${serie[serie.length - 1].indice >= 100 ? '+' : ''}${(serie[serie.length - 1].indice - 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% desde a base`}
-          />
-        )}
       </Stack>
-      <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 1.5 }}>
-        Base 100 no primeiro período · comparação encadeada entre períodos consecutivos (ignora itens que somem)
-      </Typography>
+
+      {resumo ? (
+        <Stack sx={{ mb: 1 }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', flexWrap: 'wrap' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                lineHeight: 1.1,
+                color:
+                  resumo.total > 0.5
+                    ? 'error.main'
+                    : resumo.total < -0.5
+                      ? 'success.main'
+                      : 'text.primary',
+              }}
+            >
+              {resumo.total > 0 ? '+' : ''}
+              {resumo.total.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {resumo.total > 0.5
+                ? 'a cesta ficou mais cara'
+                : resumo.total < -0.5
+                  ? 'a cesta ficou mais barata'
+                  : 'preços da cesta estáveis'}{' '}
+              de {resumo.base} a {resumo.ultimoPeriodo}
+            </Typography>
+          </Stack>
+          <Typography variant="caption" color="text.secondary" component="div">
+            {resumo.intervalo}: {resumo.ultimaVariacao > 0 ? '+' : ''}
+            {resumo.ultimaVariacao.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% · {resumo.nPeriodos} períodos analisados
+          </Typography>
+        </Stack>
+      ) : null}
+
       {!option && !carregando ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 8, textAlign: 'center' }}>
           Dados insuficientes para montar o índice.
