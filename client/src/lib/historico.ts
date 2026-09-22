@@ -445,6 +445,102 @@ export function precosGruposCesta(itens: Produto[]): GrupoPreco[] {
     .sort((a, b) => b.precoMedio - a.precoMedio);
 }
 
+export interface ValorCestaAnual {
+  ano: number;
+  valor: number;
+  gruposIncluidos: number;
+  gruposPossiveis: number;
+  itens: { grupo: string; precoUnidade: number; contribuicao: number }[];
+}
+
+/**
+ * Pesos da cesta básica (piso de referência DIEESE): quantidade fixa comprada
+ * de cada alimento. Mesma unidade em que o preço é normalizado (R$/kg·L·un).
+ */
+export const CESTA_BASICA_QTD: Record<string, { qtd: number; base: 'kg' | 'L' | 'un' }> = {
+  CARNE: { qtd: 6, base: 'kg' },
+  LEITE: { qtd: 15, base: 'L' },
+  FEIJÃO: { qtd: 4.5, base: 'kg' },
+  ARROZ: { qtd: 3.6, base: 'kg' },
+  FARINHA: { qtd: 3, base: 'kg' },
+  BATATA: { qtd: 6, base: 'kg' },
+  TOMATE: { qtd: 9, base: 'kg' },
+  PÃO: { qtd: 6, base: 'kg' },
+  CAFÉ: { qtd: 0.6, base: 'kg' },
+  BANANA: { qtd: 90, base: 'un' },
+  AÇÚCAR: { qtd: 3, base: 'kg' },
+  ÓLEO: { qtd: 0.9, base: 'L' },
+  MANTEIGA: { qtd: 0.75, base: 'kg' },
+};
+
+/**
+ * Valor total da cesta básica por ano (pesos DIEESE): preço por unidade
+ * (R$/kg·L·un) de cada grupo × quantidade fixa do grupo. Só entram na média
+ * produtos cuja medida está na MESMA unidade do peso (ex.: leite em lata não
+ * entra na cesta de 15 L). Anos rarefeitos (<50% dos grupos) são descartados e,
+ * nos anos restantes, valem apenas os grupos presentes em TODOS eles.
+ */
+export function valorCestaPorAno(itens: Produto[]): ValorCestaAnual[] {
+  const por = new Map<string, Map<number, Map<string, { t: number; unit: number }>>>();
+  for (const p of itens) {
+    const g = grupoCesta(p.produto);
+    const peso = g ? CESTA_BASICA_QTD[g] : undefined;
+    const d = dataReferencia(p);
+    if (!g || !peso || !d || p.preco == null) continue;
+    const un = extrairUnidade(p.medida);
+    if (!un || un.base !== peso.base) continue;
+    const ano = d.getFullYear();
+    let porAno = por.get(g);
+    if (!porAno) {
+      porAno = new Map();
+      por.set(g, porAno);
+    }
+    let porProduto = porAno.get(ano);
+    if (!porProduto) {
+      porProduto = new Map();
+      porAno.set(ano, porProduto);
+    }
+    const antigo = porProduto.get(p.produto);
+    const unit = p.preco / un.quantidade;
+    if (!antigo || d.getTime() > antigo.t) porProduto.set(p.produto, { t: d.getTime(), unit });
+  }
+
+  const grupos = [...por.entries()];
+  if (!grupos.length) return [];
+  const anosTodos = [...new Set(grupos.flatMap(([, porAno]) => [...porAno.keys()]))].sort((a, b) => a - b);
+  const anosUteis = anosTodos.filter((ano) => {
+    const cobertos = grupos.filter(([, porAno]) => porAno.has(ano)).length;
+    return cobertos / grupos.length >= 0.5;
+  });
+  const comuns = grupos.filter(([g, porAno]) => anosUteis.every((ano) => porAno.has(ano)));
+  if (!comuns.length) return [];
+
+  const mediaUnitaria = (porAno: Map<string, { t: number; unit: number }>): number => {
+    const units = [...porAno.values()].map((x) => x.unit).filter((v) => v > 0);
+    return units.length ? units.reduce((a, b) => a + b, 0) / units.length : 0;
+  };
+
+  return anosUteis
+    .map((ano) => {
+      const detalhe = comuns.map(([g, porAno]) => {
+        const precoUnidade = mediaUnitaria(porAno.get(ano)!);
+        return {
+          grupo: g,
+          precoUnidade,
+          contribuicao: precoUnidade * CESTA_BASICA_QTD[g].qtd,
+        };
+      });
+      return {
+        ano,
+        valor: detalhe.reduce((acc, d) => acc + d.contribuicao, 0),
+        gruposIncluidos: detalhe.length,
+        gruposPossiveis: grupos.length,
+        itens: detalhe,
+      };
+    })
+    .filter((a) => a.gruposIncluidos > 0);
+}
+
 /** Série temporal de preço médio (por unidade) para cada grupo da cesta básica. */
 export function seriesCestaBasica(
   produtos: Produto[],

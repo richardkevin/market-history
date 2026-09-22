@@ -3,8 +3,12 @@ import { readFile } from 'fs/promises';
 import path from 'path';
 
 const DIRS: Record<string, string> = {
+  assai: 'encartes_assai',
+  atacadao: 'encartes_atacadao',
   guanabara: 'encartes_guanabara',
+  mundial: 'encartes_mundial',
   prezunic: 'encartes_prezunic',
+  supermarket: 'encartes_supermarket',
 };
 
 /** Serve imagens de encartes do disco (protegido contra path traversal). */
@@ -14,7 +18,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'arquivo inválido' }, { status: 400 });
   }
   const dirRel =
-    DIRS[arquivo.startsWith('prezunic') ? 'prezunic' : 'guanabara'];
+    DIRS[Object.keys(DIRS).find((k) => arquivo.startsWith(k)) ?? 'guanabara'];
   try {
     const conteudo = await readFile(
       path.join(process.cwd(), '..', dirRel, arquivo)

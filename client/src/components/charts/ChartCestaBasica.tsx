@@ -2,11 +2,14 @@
 
 import { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import EChart from '@/components/charts/EChart';
 import InfoTitulo from '@/components/InfoTitulo';
 import { brl, chartCores } from '@/lib/utils';
-import { dataReferencia, chaveMes, grupoCesta, rotuloPeriodo, formatarPct, precosGruposCesta, precosGruposSelecao } from '@/lib/historico';
+import { valorCestaPorAno, CESTA_BASICA_QTD, formatarPct } from '@/lib/historico';
 import type { Produto } from '@/lib/types';
 
 interface ChartCestaBasicaProps {
@@ -15,166 +18,147 @@ interface ChartCestaBasicaProps {
   carregando: boolean;
 }
 
-interface VarGrupo {
-  pct: number | null;
-  mesAnterior?: string;
-  mesAtual?: string;
-}
-
-/**
- * Variação do preço médio do grupo entre os dois meses mais recentes em que
- * ele apareceu nos encartes (por produto, vale o registro mais recente do mês).
- */
-export function variacaoMensalGrupo(itens: Produto[], grupoAlvo: string): VarGrupo {
-  const medias = new Map<string, Map<string, { t: number; preco: number }>>();
-  for (const p of itens) {
-    if (
-      !p.produto ||
-      p.preco == null ||
-      (grupoCesta(p.produto) !== grupoAlvo && p.produto !== grupoAlvo)
-    )
-      continue;
-    const d = dataReferencia(p);
-    if (!d) continue;
-    const mes = chaveMes(d);
-    let porProduto = medias.get(mes);
-    if (!porProduto) {
-      porProduto = new Map();
-      medias.set(mes, porProduto);
-    }
-    const antigo = porProduto.get(p.produto);
-    if (!antigo || d.getTime() > antigo.t) porProduto.set(p.produto, { t: d.getTime(), preco: p.preco });
-  }
-
-  const meses = [...medias.keys()].sort();
-  if (meses.length < 2) return { pct: null };
-
-  const media = (mes: string) => {
-    const vs = [...medias.get(mes)!.values()].map((x) => x.preco).filter((v) => v > 0);
-    return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0;
-  };
-  const [mesAnterior, mesAtual] = meses.slice(-2);
-  const anterior = media(mesAnterior);
-  const atual = media(mesAtual);
-  if (!(anterior > 0)) return { pct: null, mesAnterior, mesAtual };
-  return { pct: ((atual - anterior) / anterior) * 100, mesAnterior, mesAtual };
-}
-
 export default function ChartCestaBasica({ itens, escuro, carregando }: ChartCestaBasicaProps) {
-  const gruposCesta = useMemo(() => precosGruposCesta(itens), [itens]);
-  const modoSelecao = gruposCesta.length === 0 && itens.length > 0;
-  const grupos = useMemo(
-    () => (modoSelecao ? precosGruposSelecao(itens).slice(0, 16) : gruposCesta),
-    [modoSelecao, itens, gruposCesta]
-  );
-  const nGrupos = grupos.length;
-
-  const variacoes = useMemo(() => {
-    const mapa = new Map<string, VarGrupo>();
-    for (const g of grupos) mapa.set(g.grupo, variacaoMensalGrupo(itens, g.grupo));
-    return mapa;
-  }, [itens, grupos]);
+  const anuais = useMemo(() => valorCestaPorAno(itens), [itens]);
 
   const option = useMemo(() => {
-    if (!grupos.length) return null;
+    if (anuais.length === 0) return null;
     const cores = escuro ? chartCores.dark : chartCores.light;
-    const ordenados = [...grupos].reverse();
-
-    const rotuloVariacao = (dataIndex: number, preco: number) => {
-      const g = ordenados[dataIndex];
-      const v = g ? variacoes.get(g.grupo) : undefined;
-      if (!v?.pct || !v.mesAnterior) return brl.format(preco);
-      const seta = v.pct > 0 ? '▲' : '▼';
-      const estilo = v.pct > 0 ? 'alta' : 'baixa';
-      return `${brl.format(preco)}  {${estilo}|${seta} ${formatarPct(v.pct)}}`;
-    };
 
     return {
       backgroundColor: 'transparent',
       tooltip: {
-        trigger: 'item' as const,
+        trigger: 'axis' as const,
+        axisPointer: { type: 'shadow' as const },
         backgroundColor: cores.tooltipBg,
         borderWidth: 0,
         textStyle: { color: cores.text },
-        formatter: (p: { dataIndex: number }) => {
-          const g = ordenados[p.dataIndex];
-          if (!g) return '';
-          const v = variacoes.get(g.grupo);
-          const linhaVar =
-            v?.pct != null && v.mesAnterior && v.mesAtual
-              ? `vs ${rotuloPeriodo(v.mesAnterior)}: <b style="color:${v.pct > 0 ? '#dc2626' : '#16a34a'}">${formatarPct(v.pct)}</b>`
-              : 'sem mês anterior para comparar';
-          return [
-            `<b>${g.grupo}</b>`,
-            `Média de ${g.nProdutos} produto${g.nProdutos > 1 ? 's' : ''}: <b>${brl.format(g.precoMedio)}</b>`,
-            linhaVar,
-            g.exemplos.length ? `<span style="opacity:.7">${g.exemplos.join(' · ')}</span>` : '',
-          ]
-            .filter(Boolean)
-            .join('<br/>');
+        formatter: (params: { dataIndex: number }[]) => {
+          const ano = anuais[params[0]?.dataIndex ?? 0];
+          if (!ano) return '';
+          const idx = anuais.findIndex((a) => a.ano === ano.ano);
+          const anterior = idx > 0 ? anuais[idx - 1] : null;
+          const yoy = anterior ? ((ano.valor - anterior.valor) / anterior.valor) * 100 : null;
+          const linhas = [
+            `<b>${ano.ano}</b>`,
+            `Cesta básica: <b>${brl.format(ano.valor)}</b>`,
+            ...ano.itens.map((i) => {
+              const peso = CESTA_BASICA_QTD[i.grupo];
+              return `${i.grupo} (${peso.qtd.toLocaleString('pt-BR')}${peso.base} · ${brl.format(i.precoUnidade)}/${peso.base}): ${brl.format(i.contribuicao)}`;
+            }),
+            `<span style="opacity:.6">${ano.gruposIncluidos} de ${ano.gruposPossiveis} grupos</span>`,
+          ];
+          if (yoy != null)
+            linhas.push(
+              `${yoy > 0 ? '▲' : yoy < 0 ? '▼' : '='} ${formatarPct(yoy)} vs. ${anterior!.ano}`
+            );
+          return linhas.join('<br/>');
         },
       },
-      grid: { left: 8, right: 96, top: 8, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 8, top: 28, bottom: 8, containLabel: true },
       xAxis: {
-        type: 'value' as const,
-        axisLabel: { color: cores.muted, fontSize: 11 },
-        splitLine: { lineStyle: { color: cores.split } },
+        type: 'category' as const,
+        data: anuais.map((a) => String(a.ano)),
+        axisLabel: { color: cores.text, fontSize: 12, fontWeight: 'bold' as const },
+        axisLine: { lineStyle: { color: cores.split } },
+        axisTick: { show: false },
       },
       yAxis: {
-        type: 'category' as const,
-        data: ordenados.map((g) => (modoSelecao ? g.grupo : `${g.grupo} (${g.nProdutos})`)),
-        axisLabel: { color: cores.text, fontSize: 11 },
-        axisLine: { show: false },
-        axisTick: { show: false },
+        type: 'value' as const,
+        scale: true,
+        axisLabel: { color: cores.muted, fontSize: 11, formatter: (v: number) => brl.format(v) },
+        splitLine: { lineStyle: { color: cores.split } },
       },
       series: [
         {
+          name: 'Valor da cesta',
           type: 'bar' as const,
-          barMaxWidth: 18,
-          data: ordenados.map((g) => Number(g.precoMedio.toFixed(2))),
+          barMaxWidth: 64,
+          data: anuais.map((a) => Number(a.valor.toFixed(2))),
           itemStyle: {
-            borderRadius: [0, 9, 9, 0],
+            borderRadius: [6, 6, 0, 0],
             color: {
               type: 'linear' as const,
-              x: 0, y: 0, x2: 1, y2: 0,
+              x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: escuro ? '#4ade80' : '#22c55e' },
-                { offset: 1, color: escuro ? '#fb923c' : '#f97316' },
+                { offset: 0, color: escuro ? '#4ade80' : '#16a34a' },
+                { offset: 1, color: escuro ? '#fb923c' : '#ea580c' },
               ],
             },
           },
           label: {
             show: true,
-            position: 'right' as const,
-            fontSize: 10,
-            color: cores.muted,
-            formatter: (p: { dataIndex: number; value: number }) => rotuloVariacao(p.dataIndex, p.value),
-            rich: {
-              alta: { color: '#dc2626', fontWeight: 'bold' as const, fontSize: 10 },
-              baixa: { color: '#16a34a', fontWeight: 'bold' as const, fontSize: 10 },
-            },
+            position: 'top' as const,
+            fontSize: 11,
+            fontWeight: 'bold' as const,
+            color: cores.text,
+            formatter: ({ value }: { value: number }) =>
+              brl.format(value),
           },
         },
       ],
     };
-  }, [grupos, variacoes, escuro, modoSelecao]);
+  }, [anuais, escuro]);
+
+  const resumo = useMemo(() => {
+    if (anuais.length < 2) return null;
+    const primeiro = anuais[0];
+    const ultimo = anuais[anuais.length - 1];
+    const anterior = anuais[anuais.length - 2];
+    return {
+      pctTotal: ((ultimo.valor - primeiro.valor) / primeiro.valor) * 100,
+      yoyUltimo: ((ultimo.valor - anterior.valor) / anterior.valor) * 100,
+      anoUltimo: ultimo.ano,
+      anoAnterior: anterior.ano,
+      melhorAno: [...anuais].sort((a, b) => a.valor - b.valor)[0],
+      piorAno: [...anuais].sort((a, b) => b.valor - a.valor)[0],
+    };
+  }, [anuais]);
 
   return (
     <Paper variant="outlined" sx={{ p: 2.5 }}>
       <InfoTitulo
-        titulo={modoSelecao ? 'Produtos selecionados · preço médio' : 'Cesta básica · preço médio por grupo'}
+        titulo="Valor da cesta básica · ano a ano"
         descricao={
-          modoSelecao
-            ? 'Preço do registro mais recente de cada produto marcado na tabela. ▲/▼ é a variação da média mensal vs. mês anterior.'
-            : 'Itens similares são agrupados (ex.: todos os arrozes viram “ARROZ”) e o valor é a média do preço mais recente de cada produto do grupo. O número ao lado do grupo indica quantos produtos entraram na média; ▲/▼ é a variação da média mensal do grupo vs. mês anterior.'
+          anuais.length
+            ? `Pesos DIEESE (${anuais[0].gruposIncluidos} de ${anuais[0].gruposPossiveis} grupos): preço por unidade de cada grupo × quantidade fixa (ex.: 6 kg de carne, 15 L de leite). Grupos sem medida comparável ou anos sem cobertura suficiente ficam de fora.`
+            : 'Soma dos pesos DIEESE da cesta (preço por unidade × quantidade fixa de cada item). Grupos sem medida comparável ou anos sem cobertura suficiente são ignorados automaticamente.'
         }
       />
       {!option && !carregando ? (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>
-          {modoSelecao ? 'Nenhum preço registrado para os itens selecionados.' : 'Nenhum item da cesta básica encontrado.'}
+          Nenhum item da cesta básica encontrado.
         </Typography>
       ) : (
-        <EChart option={option ?? {}} height={Math.max(300, nGrupos * 26)} loading={carregando} />
+        <>
+          {resumo ? (
+            <Stack direction="row" spacing={0.5} useFlexGap sx={{ mb: 1.5, flexWrap: 'wrap' }}>
+              <Tooltip title={`Variação total de ${resumo.anoUltimo} vs. ${anuais[0].ano}`} placement="top">
+                <Chip
+                  size="small"
+                  label={`${resumo.anoUltimo} vs ${anuais[0].ano}: ${formatarPct(resumo.pctTotal)}`}
+                  color={resumo.pctTotal > 0.5 ? 'error' : 'success'}
+                  variant={Math.abs(resumo.pctTotal) > 0.5 ? 'filled' : 'outlined'}
+                />
+              </Tooltip>
+              <Tooltip title={`Preço médio da cesta em ${resumo.anoUltimo} vs. ${resumo.anoAnterior}`} placement="top">
+                <Chip
+                  size="small"
+                  label={`${formatarPct(resumo.yoyUltimo)} em ${String(resumo.anoUltimo).slice(2)}/${String(resumo.anoAnterior).slice(2)}`}
+                  color={resumo.yoyUltimo > 0.5 ? 'error' : resumo.yoyUltimo < -0.5 ? 'success' : 'default'}
+                  variant={Math.abs(resumo.yoyUltimo) > 0.5 ? 'filled' : 'outlined'}
+                />
+              </Tooltip>
+              <Tooltip title={`Ano com a cesta mais barata: ${brl.format(resumo.melhorAno.valor)}`} placement="top">
+                <Chip size="small" label={`Mais barata: ${String(resumo.melhorAno.ano).slice(2)}`} color="success" variant="outlined" />
+              </Tooltip>
+              <Tooltip title={`Ano com a cesta mais cara: ${brl.format(resumo.piorAno.valor)}`} placement="top">
+                <Chip size="small" label={`Mais cara: ${String(resumo.piorAno.ano).slice(2)}`} color="error" variant="outlined" />
+              </Tooltip>
+            </Stack>
+          ) : null}
+          <EChart option={option ?? {}} height={340} loading={carregando} />
+        </>
       )}
     </Paper>
   );
