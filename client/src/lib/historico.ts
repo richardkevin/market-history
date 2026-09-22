@@ -103,23 +103,24 @@ export function serieProduto(
   const media = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   const pontos: PontoPreco[] = [];
   for (const [k, grupo] of [...porData.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    const medida = grupo[grupo.length - 1].medida;
     const preco = media(grupo.map((p) => p.preco as number));
     const clubes = grupo.filter((p) => p.preco_clube != null && p.preco_clube < (p.preco ?? Infinity));
+    const precoUnitMedio = (xs: Produto[]): number | null => {
+      const vals = xs
+        .map((p) => precoPorUnidade(p.preco as number, p.medida))
+        .filter((v): v is number => v != null);
+      return vals.length ? media(vals) : null;
+    };
+    const precoUnit = precoUnitMedio(grupo);
     pontos.push({
       data: k,
       date: dataDeChave(k),
       preco,
       precoClube: clubes.length ? Math.min(...clubes.map((p) => p.preco_clube as number)) : null,
       promocao: grupo.some((p) => p.tipo_promocao != null),
-      medida,
-      precoUnit: precoPorUnidade(preco, medida),
-      precoClubeUnit:
-        clubes.length
-          ? Math.min(
-              ...clubes.map((p) => precoPorUnidade(p.preco_clube as number, p.medida)).filter((v): v is number => v != null)
-            )
-          : null,
+      medida: grupo[grupo.length - 1].medida,
+      precoUnit,
+      precoClubeUnit: clubes.length ? precoUnitMedio(clubes) : null,
     });
   }
   return pontos;
@@ -393,11 +394,204 @@ export function mediasAnuais(
     }));
 }
 
+/**
+ * Palavras que indicam que o produto não é um item da cesta básica, mesmo que o
+ * nome contenha um dos termos de `CESTA_BASICA` (ex.: "Tempero Carne", "Ração Carne").
+ */
+const NAO_CESTA = new Set([
+  'TEMPERO',
+  'CALDO',
+  'AMACIANTE',
+  'CONDIMENTO',
+  'RAÇÃO',
+  'RAÇOES',
+  'PETISCO',
+  'BIFINHO',
+  'SACHÊ',
+  'SACHE',
+  'MACARRÃO',
+  'MACARRAO',
+  'LÁMEN',
+  'LAMEN',
+  'SNACK',
+]);
+
+/**
+ * Exclusões específicas por grupo: o nome casa com o keyword da cesta, mas o
+ * produto não é o item em si (ex.: óleo capilar em "ÓLEO", bombom "ao Leite",
+ * biscoito "à Leite" em "LEITE", tempero/caldo/ração em "CARNE").
+ */
+const EXCLUSAO_POR_GRUPO: Record<string, readonly string[]> = {
+  AÇÚCAR: [
+    'NEUTRAÇÚCAR',
+    'NEUTRACUCAR',
+    'ANTIAÇÚCAR',
+    'ANTIACUCAR',
+    'ZERO AÇÚCAR',
+    'ZERO ACUCAR',
+    'SEM AÇÚCAR',
+    'SEM ACUCAR',
+    'S/ AÇÚCAR',
+    'S/ ACUCAR',
+    'LOWÇUCAR',
+    'LOWCUCAR',
+    'BOMBOM',
+    'CHOCOLATE',
+    'BISCOITO',
+    'CONCENTRADO',
+  ],
+  BANANA: [
+    'BARRA',
+    'BOMBOM',
+    'NUTS',
+    'PÉ DE MOLEQUE',
+    'PE DE MOLEQUE',
+    'PROTEICA',
+    'PROTEÍNA',
+    'PROTEINA',
+  ],
+  BATATA: [
+    'PALHA',
+    'PALITO',
+    'FRITA',
+    'CHIPS',
+    'PRINGLE',
+    'RUFFLES',
+    "LAY'S",
+    'LAYS',
+    'JACKER',
+    'MCCAIN',
+    'YOKITOS',
+    'ONDULADA',
+    'ROSTIE',
+    'ROSTI',
+    'NHOQUE',
+    'CONGELAD',
+    'CONG.',
+    'PRÉ-FRIT',
+    'PRE-FRIT',
+    'PRÉ FRIT',
+    'PRE FRIT',
+    'HASH BROWN',
+    'NOISETTE',
+    'AIR FRYER',
+    'CRINKLE',
+    'SEAKHOUSE',
+    'STEAKHOUSE',
+    'SALGADINHO',
+    'SNACK',
+    'LONG CHIPS',
+    'TUBO',
+    'DOCE',
+    'PAPINHA',
+    'SALADA',
+    'BISCOITO',
+  ],
+  CAFÉ: [
+    'SOLÚVEL',
+    'SOLUVEL',
+    'INSTANTÂNEO',
+    'INSTANTANEO',
+    'CÁPSULA',
+    'CAPSULA',
+    'CAPPUCCINO',
+    'CAPUCCINO',
+    'LIOFILIZADO',
+    'BEBIDA',
+    'SUPLEMENTO',
+    'NOTSHAKE',
+    'PROTEÍNA',
+    'PROTEINA',
+    'GOURMET',
+    'ESPECIAL',
+    'EM GRÃOS',
+    'EM GRAOS',
+    'GRÃOS',
+    'GRAOS',
+    'ORGÂNICO',
+    'ORGANICO',
+    'DESCAFEINADO',
+    'CAFETERIA',
+    'COLÔMBIA',
+    'COLOMBIA',
+    'PERU',
+    "L'OR",
+  ],
+  MANTEIGA: [
+    'CAPILAR',
+    'GHEE',
+    'DE COCO',
+    'PERU',
+    'PIPOCA',
+    'BISCOITO',
+    'AMANTEIGADO',
+    'CREAM CRACKER',
+    'MARGARINA',
+    'BECEL',
+  ],
+  ÓLEO: [
+    'CAPILAR',
+    'CORPORAL',
+    'FINALIZADOR',
+    'MILAGROSO',
+    'EXTRAORDINÁRIO',
+    'EXTRAORDINARIO',
+    'MÁGICO',
+    'MAGICO',
+    'DA BELLE',
+    'LOLA',
+    'MUSA',
+    'PAIXÃO',
+    'PANTENE',
+    'ELSEVE',
+    'RÍCINO',
+    'RICINO',
+    'NIVEA',
+    'BANHO',
+    'MICELAR',
+    'CREAM',
+    'SARDINHA',
+    'ATUM',
+    'PEIXE',
+    'WHEY',
+    'LEAVE-IN',
+    'LEAVE IN',
+    'TRESSEMME',
+    'PINGA',
+    'DANOS',
+    'PROBELLE',
+    'SABONETE',
+    'COCO',
+    'NUTRIÇÃO',
+    'NUTRICAO',
+    'DOVE',
+    'ULTRA',
+  ],
+  LEITE: [
+    'AO LEITE',
+    'BOMBOM',
+    'BISCOITO',
+    'CHOCOLATE',
+    'TRUFA',
+    'CONFEITO',
+    'WHEY',
+    'DE ROSAS',
+    'DEMAQUILANTE',
+    'DE COCO',
+    'C/LEITE',
+    'ROSA',
+  ],
+};
+
 /** Grupo da cesta básica ao qual o produto pertence (ou null). */
 export function grupoCesta(nomeProduto: string): string | null {
   const nome = nomeProduto.toUpperCase();
+  if ([...NAO_CESTA].some((t) => nome.includes(t))) return null;
   for (const item of CESTA_BASICA) {
-    if (nome.includes(item)) return item;
+    if (!nome.includes(item)) continue;
+    const ex = EXCLUSAO_POR_GRUPO[item];
+    if (ex && ex.some((t) => nome.includes(t))) return null;
+    return item;
   }
   return null;
 }
@@ -541,24 +735,57 @@ export function valorCestaPorAno(itens: Produto[]): ValorCestaAnual[] {
     .filter((a) => a.gruposIncluidos > 0);
 }
 
+/**
+ * Remove valores unitários fora de [mediana/6, mediana*6] dentro de um mesmo
+ * balde (mês/encarte). Protege o preço do grupo de itens fora da cesta que
+ * escapam dos keywords (ex.: tempero Knorr 25g dentro de "CARNE").
+ */
+function limparOutliers(precos: number[]): number[] {
+  if (precos.length < 3) return precos;
+  const ordenados = [...precos].sort((a, b) => a - b);
+  const mediana = ordenados[Math.floor(ordenados.length / 2)];
+  if (mediana <= 0) return precos;
+  const min = mediana / 6;
+  const max = mediana * 6;
+  return precos.filter((v) => v >= min && v <= max);
+}
+
 /** Série temporal de preço médio (por unidade) para cada grupo da cesta básica. */
 export function seriesCestaBasica(
   produtos: Produto[],
   opts?: { granularidade?: Granularidade }
 ): SerieGrupo[] {
+  const chave = chavePorGranularidade(opts?.granularidade ?? 'mes');
   const grupos = new Map<string, Produto[]>();
   for (const p of produtos) {
     const g = grupoCesta(p.produto);
     if (!g) continue;
     (grupos.get(g) ?? grupos.set(g, []).get(g)!).push(p);
   }
+  const media = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
   return [...grupos.entries()]
-    .map(([grupo, lista]) => ({
-      grupo,
-      pontos: serieProduto(lista, opts)
-        .map((pt) => ({ date: pt.date, data: pt.data, precoUnit: pt.precoUnit }))
-        .filter((pt) => pt.precoUnit != null),
-    }))
+    .map(([grupo, lista]) => {
+      const porData = new Map<string, number[]>();
+      for (const p of lista) {
+        const d = dataReferencia(p);
+        if (!d || p.preco == null) continue;
+        const u = precoPorUnidade(p.preco, p.medida);
+        if (u == null) continue;
+        const k = chave(d);
+        (porData.get(k) ?? porData.set(k, []).get(k)!).push(u);
+      }
+      const pontos = [...porData.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([k, precos]) => ({
+          date: dataDeChave(k),
+          data: k,
+          precoUnit: limparOutliers(precos).length
+            ? media(limparOutliers(precos))
+            : null,
+        }))
+        .filter((pt) => pt.precoUnit != null);
+      return { grupo, pontos };
+    })
     .filter((s) => s.pontos.length >= 2)
     .sort((a, b) => a.grupo.localeCompare(b.grupo, 'pt-BR'));
 }
