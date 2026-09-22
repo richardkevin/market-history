@@ -34,6 +34,7 @@ interface ChartPrecoLinhaProps {
   /** true quando há itens marcados na tabela — plota uma linha por produto */
   modoSelecao?: boolean;
   escuro: boolean;
+  slug?: string;
 }
 
 interface Sugerido {
@@ -49,6 +50,7 @@ export default function ChartPrecoLinha({
   produtosCesta,
   modoSelecao = false,
   escuro,
+  slug,
 }: ChartPrecoLinhaProps) {
   const [sugestoes, setSugestoes] = useState<Sugerido[]>([]);
   const [porUnidade, setPorUnidade] = useState(false);
@@ -286,7 +288,7 @@ export default function ChartPrecoLinha({
   );
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }}>
+    <Paper variant="outlined" id={slug} sx={{ p: 2.5 }}>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         spacing={1.5}

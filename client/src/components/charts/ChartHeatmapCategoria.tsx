@@ -18,9 +18,10 @@ interface ChartHeatmapCategoriaProps {
   produtos: Produto[];
   escuro: boolean;
   carregando: boolean;
+  slug?: string;
 }
 
-export default function ChartHeatmapCategoria({ produtos, escuro, carregando }: ChartHeatmapCategoriaProps) {
+export default function ChartHeatmapCategoria({ produtos, escuro, carregando, slug }: ChartHeatmapCategoriaProps) {
   const [nDatas, setNDatas] = useState(12);
   const [granularidade, setGranularidade] = useState<Granularidade>('mes');
 
@@ -113,7 +114,7 @@ export default function ChartHeatmapCategoria({ produtos, escuro, carregando }: 
   }, [categorias, datasVisiveis, nDatas, escuro]);
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }}>
+    <Paper variant="outlined" id={slug} sx={{ p: 2.5 }}>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 0.5, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <InfoTitulo
           titulo="Variação por categoria"

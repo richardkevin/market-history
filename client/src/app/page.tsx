@@ -13,6 +13,8 @@ import ProdutosTable from '@/components/ProdutosTable';
 import CardsDestaque from '@/components/CardsDestaque';
 import TabelaVariacao from '@/components/TabelaVariacao';
 import PainelProduto from '@/components/PainelProduto';
+import MenuGraficos from '@/components/MenuGraficos';
+import CardDieeseCesta from '@/components/CardDieeseCesta';
 import ChartPrecoLinha from '@/components/charts/ChartPrecoLinha';
 import ChartPrecoAnual from '@/components/charts/ChartPrecoAnual';
 import ChartVariacaoCesta from '@/components/charts/ChartVariacaoCesta';
@@ -78,7 +80,7 @@ export default function Home() {
           </Box>
 
           <section>
-            menu
+            <MenuGraficos />
           </section>
         </Stack>
 
@@ -96,34 +98,21 @@ export default function Home() {
             onSelecionarProduto={setProdutoSelecionado}
           />
 
-          <FiltrosBar
-            opcoes={filtros}
-            filtroProduto={filtroProduto}
-            filtroAnos={filtroAnos}
-            filtroMarca={filtroMarca}
-            filtroCategoria={filtroCategoria}
-            onChangeProduto={setFiltroProduto}
-            onChangeAnos={setFiltroAnos}
-            onChangeMarca={setFiltroMarca}
-            onChangeCategoria={setFiltroCategoria}
-            onLimpar={limparFiltros}
-          />
-
-        <ProdutosTable
-          produtos={produtos}
-          carregando={carregando}
-          onLimparFiltros={limparFiltros}
-          selecionados={graficosSelecionados}
-          onToggleSelecionado={alternarGraficoSelecionado}
-          onAbrirDetalhe={setProdutoDetalhe}
-        />
-
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12 }}>
+            <Grid size={{ xs: 12, lg: 8 }}>
               <ChartVariacaoCesta
                 itens={produtosGrafico}
                 escuro={escuro}
                 carregando={carregandoCesta}
+                slug="variacao-cesta-basica"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, lg: 4 }}>
+              <CardDieeseCesta
+                itens={produtos}
+                escuro={escuro}
+                carregando={carregandoCesta}
+                slug="dieese-cesta-basica"
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -131,6 +120,7 @@ export default function Home() {
                 produtos={produtosGrafico}
                 escuro={escuro}
                 carregando={carregandoCesta}
+                slug="variacao-grupos"
               />
             </Grid>
           </Grid>
@@ -145,6 +135,7 @@ export default function Home() {
                 produtosCesta={produtosGrafico}
                 modoSelecao={graficosSelecionados.length > 0}
                 escuro={escuro}
+                slug="preco-produto"
               />
             </Grid>
             <Grid size={{ xs: 12, lg: 5 }}>
@@ -155,9 +146,32 @@ export default function Home() {
                 produtosCesta={produtosGrafico}
                 modoSelecao={graficosSelecionados.length > 0}
                 escuro={escuro}
+                slug="preco-anual"
               />
             </Grid>
           </Grid>
+
+          <FiltrosBar
+            opcoes={filtros}
+            filtroProduto={filtroProduto}
+            filtroAnos={filtroAnos}
+            filtroMarca={filtroMarca}
+            filtroCategoria={filtroCategoria}
+            onChangeProduto={setFiltroProduto}
+            onChangeAnos={setFiltroAnos}
+            onChangeMarca={setFiltroMarca}
+            onChangeCategoria={setFiltroCategoria}
+            onLimpar={limparFiltros}
+          />
+
+          <ProdutosTable
+            produtos={produtos}
+            carregando={carregando}
+            onLimparFiltros={limparFiltros}
+            selecionados={graficosSelecionados}
+            onToggleSelecionado={alternarGraficoSelecionado}
+            onAbrirDetalhe={setProdutoDetalhe}
+          />
 
           <TabelaVariacao
             variacoes={variacoesGrafico}
@@ -169,6 +183,7 @@ export default function Home() {
             produtos={produtosGrafico}
             escuro={escuro}
             carregando={carregandoCesta}
+            slug="heatmap-categorias"
           />
         </Stack>
 

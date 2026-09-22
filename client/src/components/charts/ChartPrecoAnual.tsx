@@ -21,6 +21,7 @@ interface ChartPrecoAnualProps {
   /** true quando há itens marcados na tabela — usa todos, sem filtrar pela cesta */
   modoSelecao?: boolean;
   escuro: boolean;
+  slug?: string;
 }
 
 export default function ChartPrecoAnual({
@@ -30,6 +31,7 @@ export default function ChartPrecoAnual({
   produtosCesta,
   modoSelecao = false,
   escuro,
+  slug,
 }: ChartPrecoAnualProps) {
   const modoCesta = nomeProduto == null;
 
@@ -167,7 +169,7 @@ export default function ChartPrecoAnual({
   }, [anuais]);
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }}>
+    <Paper variant="outlined" id={slug} sx={{ p: 2.5 }}>
       <InfoTitulo
         titulo="Comparação anual"
       descricao={

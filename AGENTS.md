@@ -13,11 +13,12 @@ Pipeline that scrapes Brazilian supermarket flyer (encarte) images (Prezunic + G
 
 - Env: `source .venv/bin/activate` (uv, `requires-python >=3.14`, `Pillow`, `opencv-python-headless`, `easyocr`, `playwright`, `google-genai`).
 - Active extractors (all write to **`encartes_produtos.db`**) — run with an image arg:
-  - `ler_produtos_gemini.py` — Gemini Vision, Pydantic output (produto, marca, medida, preço, preço_clube, tipo_promo, limite, observacao). Reads key from `GEMINI_API_KEY` (or `MERCADO_GEMINI_API_KEY`). Needs network.
+  - `ler_produtos_gemini.py` — Gemini Vision, Pydantic output (produto, marca, medida, preço, preço_clube, tipo_promo, limite, observacao). Reads key from `GEMINI_API_KEY` (or `MERCADO_GEMINI_API_KEY`). Needs network. Sopports `--todas` (all `encartes_*` folders, including Pinterest boards), `--pasta`, single file, `--fonte <origem>` and PDFs (pymupdf, converted to images).
   - `ler_produtos_guanabara.py` / `ler_produtos_mimo.py` — Guanabara / opencode-API extraction.
   - `ler_produtos_easyocr.py` — EasyOCR, `gpu=True` (MPS on Mac). **Still writes to legacy `prezunic_produtos.db`** — do not point the client at it.
   - `ler_produtos.py`, `ler_produtos_vision.py` — older approaches, unused.
-- Downloaders: `baixar_encartes.py` (Prezunic site, stdlib only), `baixar_fotos_facebook.py` (Playwright, manual login), `baixar_guanabara_site.py` / `_scribd.py` / `_historico.py`.
+- Downloaders: `baixar_encartes.py` (Prezunic site, stdlib only), `baixar_fotos_facebook.py` (Playwright, manual login), `baixar_guanabara_site.py` / `_scribd.py` / `_historico.py`, `baixar_pinterest.py` (encartes RJ do perfil Folhetos TV, baixa em `encartes_pinterest/<board>/`, boards mapeados em `BOARD_SUPERMERCADO`).
+- **Versionamento do DB**: cada execução do Gemini cria um lote na tabela `lotes` (`fonte`, `modelo`, `comando`, contadores). Cada produto grava `lote_id`, `fonte` (pinterest | site_oficial | wayback | api_graphql | encarte_br.com) e `origem` (caminho completo do arquivo). Rollback por lote: `DELETE FROM produtos WHERE lote_id = X`. Rows antigas só têm `origem` backfilled (`supermercado/imagem`), `fonte`/`lote_id` NULL.
 - Data ops (idempotent, run against `encartes_produtos.db`):
   - `migrar_categorias.py` — adds/rebuilds the `categoria` column by keyword rules (first matching rule wins). Rerun after editing rules.
   - `normalizar_produtos.py` — de-dupes/fixes product + brand names. **Backs up the DB first** (`.backup.db`).

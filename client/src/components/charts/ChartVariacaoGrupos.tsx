@@ -20,13 +20,20 @@ interface ChartVariacaoGruposProps {
   produtos: Produto[];
   escuro: boolean;
   carregando: boolean;
+  slug?: string;
 }
 
 const fmt = (v: number) =>
   `${v > 0 ? '+' : ''}${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 
-export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: ChartVariacaoGruposProps) {
-  const [granularidade, setGranularidade] = useState<Granularidade>('mes');
+const ROTULO_DETALHE: Record<Granularidade, string> = {
+  ano: 'Ano a ano',
+  mes: 'Mês a mês',
+  encarte: 'Encarte a encarte',
+};
+
+export default function ChartVariacaoGrupos({ produtos, escuro, carregando, slug }: ChartVariacaoGruposProps) {
+  const [granularidade, setGranularidade] = useState<Granularidade>('ano');
   const [grupoSel, setGrupoSel] = useState<string | null>(null);
 
   const { datas, grupos } = useMemo(
@@ -67,10 +74,12 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
           const g = grupos.find((x) => x.grupo === params[0]?.name);
           if (!g || g.acumulado == null) return `${g?.grupo ?? ''}: sem comparável`;
           const seta = g.acumulado > 0 ? '▲' : g.acumulado < 0 ? '▼' : '=';
-          return `<b>${g.grupo}</b><br/>${seta} ${fmt(g.acumulado)} no período<br/><span style="opacity:.6">clique para ver mês a mês</span>`;
+          const escopo =
+            granularidade === 'ano' ? 'no último ano (vs. anterior)' : 'no período';
+          return `<b>${g.grupo}</b><br/>${seta} ${fmt(g.acumulado)} ${escopo}<br/><span style="opacity:.6">clique para ver ${granularidade === 'ano' ? 'ano a ano' : granularidade === 'mes' ? 'mês a mês' : 'encarte a encarte'}</span>`;
         },
       },
-      grid: { left: 8, right: 44, top: 8, bottom: 8, containLabel: true },
+      grid: { left: 8, right: 54, top: 8, bottom: 8, containLabel: true },
       xAxis: {
         type: 'value' as const,
         axisLabel: { color: cores.muted, fontSize: 11, formatter: (v: number) => `${v}%` },
@@ -86,7 +95,7 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
       },
       series: [
         {
-          name: 'Variação acumulada',
+          name: granularidade === 'ano' ? 'Variação anual' : 'Variação acumulada',
           type: 'bar' as const,
           barMaxWidth: 20,
           data: grupos.map((g) => ({
@@ -114,7 +123,7 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
         },
       ],
     };
-  }, [grupos, escuro]);
+  }, [grupos, escuro, granularidade]);
 
   const optionHeat = useMemo(() => {
     if (!sel || !datas.length) return null;
@@ -131,13 +140,15 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
         formatter: (p: { value: [number, number, number | null] }) => {
           const [, , v] = p.value;
           const data = datas[p.value[0]] ? rotuloPeriodo(datas[p.value[0]]) : '';
+          const base =
+            granularidade === 'ano' ? 'ano anterior' : granularidade === 'mes' ? 'mês anterior' : 'encarte anterior';
           const texto =
             v == null
               ? 'sem base comparável'
               : v > 0
-                ? `▲ alta de ${fmt(v)} vs. período anterior`
+                ? `▲ alta de ${fmt(v)} vs. ${base}`
                 : v < 0
-                  ? `▼ queda de ${fmt(v)} vs. período anterior`
+                  ? `▼ queda de ${fmt(v)} vs. ${base}`
                   : 'estável (0%)';
           return `<b>${sel.grupo.toLowerCase()}</b> · ${data}<br/>${texto}`;
         },
@@ -188,14 +199,18 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
         },
       ],
     };
-  }, [sel, datas, escuro]);
+  }, [sel, datas, granularidade, escuro]);
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }}>
+    <Paper variant="outlined" id={slug} sx={{ p: 2.5 }}>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 0.5, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <InfoTitulo
           titulo="Variação por grupo da cesta"
-          descricao="Quanto cada grupo da cesta (café, tomate, óleo…) subiu ou caiu em todo o período — ranqueado do maior para o menor. Clique numa barra para ver a variação mês a mês do grupo e avaliar substituições (prefira quem caiu, evite quem disparou)."
+          descricao={
+            granularidade === 'ano'
+              ? 'Variação anual de cada grupo da cesta (café, tomate, óleo…): quanto o preço médio do grupo subiu ou caiu no último ano com dados vs. o ano anterior — ranqueado do maior para o menor. Troque para Mês/Encarte para ver o acumulado do período inteiro.'
+              : `Quanto cada grupo da cesta (café, tomate, óleo…) subiu ou caiu em todo o período (${granularidade === 'mes' ? 'mês a mês' : 'encarte a encarte'}) — ranqueado do maior para o menor. Troque para Ano para a variação anual.`
+          }
         />
         <ToggleButtonGroup
           size="small"
@@ -208,6 +223,9 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
             }
           }}
         >
+          <ToggleButton value="ano">
+            <Typography variant="caption">Ano</Typography>
+          </ToggleButton>
           <ToggleButton value="mes">
             <Typography variant="caption">Mês</Typography>
           </ToggleButton>
@@ -240,7 +258,9 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
             </Tooltip>
           )}
           <Typography variant="caption" color="text.secondary" component="div" sx={{ alignSelf: 'center' }}>
-            Acumulado = 1º → último período com dado do grupo · clique numa barra para o mês a mês.
+            {granularidade === 'ano'
+              ? 'Variação anual = último ano com dado vs. o anterior · clique numa barra para a série ano a ano.'
+              : `Acumulado = 1º → último período com dado do grupo (${granularidade === 'mes' ? 'mês a mês' : 'encarte a encarte'}) · clique numa barra para o detalhe período a período.`}
           </Typography>
         </Stack>
       ) : null}
@@ -264,7 +284,9 @@ export default function ChartVariacaoGrupos({ produtos, escuro, carregando }: Ch
       {sel && optionHeat ? (
         <Stack sx={{ mt: 2 }}>
           <Stack direction="row" spacing={1} sx={{ mb: 0.5, alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="subtitle2">Mês a mês · {sel.grupo.toLowerCase()}</Typography>
+            <Typography variant="subtitle2">
+              {ROTULO_DETALHE[granularidade]} · {sel.grupo.toLowerCase()}
+            </Typography>
             <Button size="small" startIcon={<Close />} onClick={() => setGrupoSel(null)}>
               Fechar
             </Button>

@@ -24,9 +24,10 @@ interface ChartVariacaoCestaProps {
   itens: Produto[];
   escuro: boolean;
   carregando: boolean;
+  slug?: string;
 }
 
-export default function ChartVariacaoCesta({ itens, escuro, carregando }: ChartVariacaoCestaProps) {
+export default function ChartVariacaoCesta({ itens, escuro, carregando, slug }: ChartVariacaoCestaProps) {
   const [vista, setVista] = useState<'ano' | 'mes'>('ano');
 
   const anuais = useMemo(() => valorCestaPorAno(itens), [itens]);
@@ -223,7 +224,7 @@ export default function ChartVariacaoCesta({ itens, escuro, carregando }: ChartV
   const okMes = optionMes != null;
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }}>
+    <Paper variant="outlined" id={slug} sx={{ p: 2.5 }}>
       <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 1, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <InfoTitulo
           titulo="Variação da cesta básica"

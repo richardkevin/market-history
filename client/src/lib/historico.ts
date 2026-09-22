@@ -32,10 +32,10 @@ function dataDeChave(k: string): Date {
   return new Date(y, (m ?? 1) - 1, 1, 12);
 }
 
-export type Granularidade = 'encarte' | 'mes';
+export type Granularidade = 'ano' | 'mes' | 'encarte';
 
 const chavePorGranularidade = (g: Granularidade) => (d: Date) =>
-  g === 'mes' ? chaveMes(d) : chaveData(d);
+  g === 'mes' ? chaveMes(d) : g === 'encarte' ? chaveData(d) : String(d.getFullYear());
 
 export interface Unidade {
   quantidade: number;
@@ -512,7 +512,7 @@ export function valorCestaPorAno(itens: Produto[]): ValorCestaAnual[] {
     const cobertos = grupos.filter(([, porAno]) => porAno.has(ano)).length;
     return cobertos / grupos.length >= 0.5;
   });
-  const comuns = grupos.filter(([g, porAno]) => anosUteis.every((ano) => porAno.has(ano)));
+  const comuns = grupos.filter(([, porAno]) => anosUteis.every((ano) => porAno.has(ano)));
   if (!comuns.length) return [];
 
   const mediaUnitaria = (porAno: Map<string, { t: number; unit: number }>): number => {
@@ -570,7 +570,8 @@ export interface SerieSelecao {
 
 export interface VariacaoGrupoCesta {
   grupo: string;
-  /** variação % acumulada entre o 1º e o último período com preço do grupo */
+  /** variação % acumulada entre o 1º e o último período com preço do grupo
+   *  (em granularidade 'ano', variação do último ano com dado vs. o anterior) */
   acumulado: number | null;
   /** variação % de cada período vs. o anterior (null = buraco), alinhado a `datas` */
   valores: (number | null)[];
@@ -579,13 +580,15 @@ export interface VariacaoGrupoCesta {
 /**
  * Variação de preço médio por grupo da cesta básica (café, tomate, óleo…).
  * `acumulado` = quanto o grupo subiu/caiu em todo o período (para ranquear e
- * sugerir substituição); `valores` = variação mês/mês (para o heatmap de detalhe).
+ * sugerir substituição); `valores` = variação período a período (para o detalhe).
+ * Com granularidade 'ano', `acumulado` vira a variação anual (último ano vs. anterior).
  */
 export function variacaoPorGrupoCesta(
   produtos: Produto[],
   opts?: { granularidade?: Granularidade }
 ): { datas: string[]; grupos: VariacaoGrupoCesta[] } {
   const chave = chavePorGranularidade(opts?.granularidade ?? 'mes');
+  const anual = opts?.granularidade === 'ano';
   const porGrupo = new Map<string, Map<string, { soma: number; n: number }>>();
   for (const p of produtos) {
     const g = grupoCesta(p.produto);
@@ -616,13 +619,17 @@ export function variacaoPorGrupoCesta(
         .filter((i): i is number => i != null);
       const primeira = presentes[0];
       const ultima = presentes[presentes.length - 1];
-      const acumulado =
-        primeira != null &&
-        ultima != null &&
-        ultima > primeira &&
-        (medias[primeira] as number) > 0
-          ? ((medias[ultima] as number) / (medias[primeira] as number) - 1) * 100
-          : null;
+      let acumulado: number | null = null;
+      if (primeira != null && ultima != null && ultima > primeira && (medias[primeira] as number) > 0) {
+        if (anual) {
+          const ultimos = presentes.slice(-2);
+          if (ultimos.length === 2 && (medias[ultimos[0]] as number) > 0) {
+            acumulado = ((medias[ultimos[1]] as number) / (medias[ultimos[0]] as number) - 1) * 100;
+          }
+        } else {
+          acumulado = ((medias[ultima] as number) / (medias[primeira] as number) - 1) * 100;
+        }
+      }
       const valores = medias.map((v, i) => {
         const prev = i > 0 ? medias[i - 1] : null;
         return v == null || prev == null || prev <= 0 ? null : (v / prev - 1) * 100;
@@ -696,8 +703,9 @@ export const formatarPct = (v: number) =>
 
 const MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
-/** "2024-05" → "mai/24" · "2024-05-12" → "12/05". */
+/** "2024" → "2024" · "2024-05" → "mai/24" · "2024-05-12" → "12/05". */
 export function rotuloPeriodo(k: string): string {
+  if (k.length === 4) return k;
   if (k.length === 7) {
     const [ano, mes] = k.split('-');
     return `${MESES_CURTOS[Number(mes) - 1]}/${ano.slice(2)}`;
