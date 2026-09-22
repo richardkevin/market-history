@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -18,6 +20,7 @@ import {
   serieDieeseNoPeriodo,
   resumoDieese,
   rotuloMes,
+  mediaAnualDieese,
 } from '@/lib/dieese';
 import type { Produto } from '@/lib/types';
 
@@ -29,10 +32,12 @@ interface CardDieeseCestaProps {
 }
 
 export default function CardDieeseCesta({ itens, escuro, carregando = false, slug }: CardDieeseCestaProps) {
+  const [vista, setVista] = useState<'ano' | 'mes'>('ano');
+
   const serie = useMemo(() => serieDieeseNoPeriodo(itens), [itens]);
   const resumo = useMemo(() => resumoDieese(serie), [serie]);
+  const anuais = useMemo(() => mediaAnualDieese(serie), [serie]);
   const cores = escuro ? chartCores.dark : chartCores.light;
-  const corLinha = escuro ? '#fb923c' : '#ea580c';
 
   const corDelta = (v: number | null | undefined) =>
     v == null || Math.abs(v) <= 0.5 ? 'default' : v > 0.5 ? 'error' : 'success';
@@ -54,32 +59,111 @@ export default function CardDieeseCesta({ itens, escuro, carregando = false, slu
 
   const ultimos = serie.slice(-6).reverse();
 
-  const option = useMemo(() => {
-    if (serie.length < 2) return null;
+  const optionAno = useMemo(() => {
+    if (anuais.length === 0) return null;
     return {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis' as const,
+        axisPointer: { type: 'shadow' as const },
         backgroundColor: cores.tooltipBg,
         borderWidth: 0,
         textStyle: { color: cores.text },
-        formatter: (params: { value: [number, number] }[]) => {
-          const d = new Date(params[0].value[0]);
-          const v = params[0].value[1];
-          return `<b>${d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</b><br/>Cesta DIEESE: <b>${brl.format(v)}</b>`;
+        formatter: (params: { dataIndex: number }[]) => {
+          const a = anuais[params[0]?.dataIndex ?? 0];
+          if (!a) return '';
+          const idx = anuais.findIndex((x) => x.ano === a.ano);
+          const ant = idx > 0 ? anuais[idx - 1] : null;
+          const yoy = ant ? (a.media / ant.media - 1) * 100 : null;
+          const linhas = [
+            `<b>${a.ano}</b>`,
+            `Cesta DIEESE (média anual): <b>${brl.format(a.media)}</b>`,
+          ];
+          if (yoy != null)
+            linhas.push(
+              `${yoy > 0 ? '▲' : yoy < 0 ? '▼' : '='} ${formatarPct(yoy)} vs. ${ant!.ano}`
+            );
+          return linhas.join('<br/>');
         },
       },
-      grid: { left: 8, right: 10, top: 28, bottom: 4, containLabel: true },
+      grid: { left: 8, right: 8, top: 28, bottom: 8, containLabel: true },
       xAxis: {
-        type: 'time' as const,
+        type: 'category' as const,
+        data: anuais.map((a) => String(a.ano)),
+        axisLabel: { color: cores.text, fontSize: 11, fontWeight: 'bold' as const },
+        axisLine: { lineStyle: { color: cores.split } },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: 'value' as const,
+        scale: true,
+        axisLabel: { color: cores.muted, fontSize: 10, formatter: (v: number) => brl.format(v) },
+        splitLine: { lineStyle: { color: cores.split } },
+      },
+      series: [
+        {
+          name: 'Cesta DIEESE (média anual)',
+          type: 'bar',
+          barMaxWidth: 36,
+          data: anuais.map((a) => Number(a.media.toFixed(2))),
+          itemStyle: {
+            borderRadius: [4, 4, 0, 0],
+            color: {
+              type: 'linear' as const,
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: escuro ? '#4ade80' : '#16a34a' },
+                { offset: 1, color: escuro ? '#fb923c' : '#ea580c' },
+              ],
+            },
+          },
+          label: {
+            show: true,
+            position: 'top' as const,
+            fontSize: 9,
+            fontWeight: 'bold' as const,
+            color: cores.text,
+            formatter: (p: { value: number }) => brl.format(p.value),
+          },
+          labelLayout: { hideOverlap: true },
+        },
+      ],
+    };
+  }, [anuais, cores, escuro]);
+
+  const optionMes = useMemo(() => {
+    if (serie.length < 1) return null;
+    const muitos = serie.length > 14;
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis' as const,
+        axisPointer: { type: 'shadow' as const },
+        backgroundColor: cores.tooltipBg,
+        borderWidth: 0,
+        textStyle: { color: cores.text },
+        formatter: (params: { dataIndex: number }[]) => {
+          const p = serie[params[0]?.dataIndex ?? 0];
+          if (!p) return '';
+          const ant = serie[serie.indexOf(p) - 1];
+          const delta = ant ? (p.valor / ant.valor - 1) * 100 : null;
+          return `<b>${rotuloMes(p.data)}</b><br/>Cesta DIEESE: <b>${brl.format(p.valor)}</b>${
+            delta != null ? `<br/><span style="opacity:.6">${formatarPct(delta)} vs. mês anterior</span>` : ''
+          }`;
+        },
+      },
+      grid: { left: 8, right: 8, top: 28, bottom: 8, containLabel: true },
+      xAxis: {
+        type: 'category' as const,
+        data: serie.map((p) => rotuloMes(p.data)),
         axisLabel: {
           color: cores.muted,
           fontSize: 10,
-          formatter: (v: number) =>
-            new Date(v).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+          interval: muitos ? 'auto' : 0,
+          rotate: muitos ? 45 : 0,
         },
         axisLine: { lineStyle: { color: cores.split } },
-        splitLine: { show: false },
+        axisTick: { show: false },
       },
       yAxis: {
         type: 'value' as const,
@@ -90,33 +174,58 @@ export default function CardDieeseCesta({ itens, escuro, carregando = false, slu
       series: [
         {
           name: 'Cesta básica RJ (DIEESE)',
-          type: 'line',
-          data: serie.map((p) => [new Date(`${p.data}-01T12:00:00`).getTime(), p.valor] as [number, number]),
-          symbolSize: 3,
-          lineStyle: { width: 2.5, color: corLinha },
-          itemStyle: { color: corLinha },
-          areaStyle: {
+          type: 'bar',
+          barMaxWidth: 28,
+          data: serie.map((p) => Number(p.valor.toFixed(2))),
+          itemStyle: {
+            borderRadius: [4, 4, 0, 0],
             color: {
               type: 'linear' as const,
               x: 0, y: 0, x2: 0, y2: 1,
               colorStops: [
-                { offset: 0, color: `${corLinha}33` },
-                { offset: 1, color: `${corLinha}00` },
+                { offset: 0, color: escuro ? '#4ade80' : '#16a34a' },
+                { offset: 1, color: escuro ? '#fb923c' : '#ea580c' },
               ],
             },
           },
+          label: {
+            show: !muitos,
+            position: 'top' as const,
+            fontSize: 9,
+            fontWeight: 'bold' as const,
+            color: cores.text,
+            formatter: (p: { value: number }) => brl.format(p.value),
+          },
+          labelLayout: { hideOverlap: true },
         },
       ],
     };
-  }, [serie, cores, corLinha]);
+  }, [serie, cores, escuro]);
 
   return (
     <Paper variant="outlined" id={slug} sx={{ p: 2.5, height: '100%' }}>
-      <Stack sx={{ mb: 1 }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 1, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <InfoTitulo
           titulo="Cesta básica RJ · DIEESE"
-          descricao="Valor oficial mensal da cesta básica do Rio de Janeiro apurado pelo DIEESE (PNCBA), no mesmo período dos encartes do gráfico ao lado. Referência nacional: 13 alimentos com pesos fixos — compare com a nossa cesta calculada dos encartes."
+          descricao={
+            vista === 'ano'
+              ? 'Valor oficial médio anual da cesta básica do Rio de Janeiro apurado pelo DIEESE (PNCBA), no mesmo período dos encartes do gráfico ao lado. Média dos meses do ano com dados — compare com a nossa cesta calculada dos encartes.'
+              : 'Valor oficial mensal da cesta básica do Rio de Janeiro apurado pelo DIEESE (PNCBA), no mesmo período dos encartes do gráfico ao lado. Referência nacional: 13 alimentos com pesos fixos — compare com a nossa cesta calculada dos encartes.'
+          }
         />
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={vista}
+          onChange={(_, v) => v && setVista(v)}
+        >
+          <ToggleButton value="ano">
+            <Typography variant="caption">Ano a ano</Typography>
+          </ToggleButton>
+          <ToggleButton value="mes">
+            <Typography variant="caption">Mês a mês</Typography>
+          </ToggleButton>
+        </ToggleButtonGroup>
       </Stack>
 
       {resumo ? (
@@ -131,7 +240,6 @@ export default function CardDieeseCesta({ itens, escuro, carregando = false, slu
           </Stack>
 
           <Stack direction="row" spacing={0.5} useFlexGap sx={{ mt: 1, mb: 1, flexWrap: 'wrap' }}>
-            {deltaChip('vs mês anterior', resumo.variacaoMensal, 'Variação da cesta no mês mais recente')}
             {deltaChip('12 meses', resumo.variacao12m, 'Variação em 12 meses (mesmo mês do ano anterior)')}
             {deltaChip('no ano', resumo.variacaoNoAno, 'Variação acumulada desde o início do ano')}
             {variacaoPeriodo != null
@@ -139,15 +247,23 @@ export default function CardDieeseCesta({ itens, escuro, carregando = false, slu
               : null}
           </Stack>
 
-          {option ? (
-            <EChart option={option} height={190} loading={carregando} />
+          {vista === 'ano' ? (
+            optionAno ? (
+              <EChart option={optionAno} height={240} loading={carregando} />
+            ) : (
+              <Typography color="text.secondary" variant="body2" sx={{ py: 6, textAlign: 'center' }}>
+                Período dos encartes sem dados DIEESE.
+              </Typography>
+            )
+          ) : optionMes ? (
+            <EChart option={optionMes} height={240} loading={carregando} />
           ) : (
             <Typography color="text.secondary" variant="body2" sx={{ py: 6, textAlign: 'center' }}>
               Período dos encartes sem dados DIEESE.
             </Typography>
           )}
 
-          {ultimos.length > 0 ? (
+          {vista === 'mes' && ultimos.length > 0 ? (
             <Table size="small" sx={{ mt: 1 }}>
               <TableBody>
                 {ultimos.map((p) => {
@@ -179,10 +295,6 @@ export default function CardDieeseCesta({ itens, escuro, carregando = false, slu
               </TableBody>
             </Table>
           ) : null}
-
-          <Typography variant="caption" color="text.disabled" component="div" sx={{ mt: 1 }}>
-            Fonte: DIEESE — Pesquisa Nacional da Cesta Básica de Alimentos (via SGS/Banco Central e boletins mensais). Valor em R$ da cesta da Região 1 (RJ).
-          </Typography>
         </>
       ) : (
         <Typography color="text.secondary" variant="body2" sx={{ py: 8, textAlign: 'center' }}>
