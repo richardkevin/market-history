@@ -20,6 +20,8 @@ import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import InboxOutlined from '@mui/icons-material/InboxOutlined';
 import LocalOfferOutlined from '@mui/icons-material/LocalOfferOutlined';
 import OpenInNewOutlined from '@mui/icons-material/OpenInNewOutlined';
@@ -49,6 +51,7 @@ export default function ProdutosTable({
   const [pagina, setPagina] = useState(0);
   const [porPagina, setPorPagina] = useState(10);
   const [produtosAnteriores, setProdutosAnteriores] = useState(produtos);
+  const [mostrarClubePromo, setMostrarClubePromo] = useState(false);
 
   if (produtos !== produtosAnteriores) {
     setProdutosAnteriores(produtos);
@@ -65,6 +68,16 @@ export default function ProdutosTable({
         sx={{ px: 2.5, pt: 2.5, alignItems: 'center', justifyContent: 'space-between' }}
       >
         <Typography variant="h6">Produtos monitorados</Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              size="small"
+              checked={mostrarClubePromo}
+              onChange={(e) => setMostrarClubePromo(e.target.checked)}
+            />
+          }
+          label="Clube / promoção"
+        />
       </Stack>
 
 
@@ -111,22 +124,22 @@ export default function ProdutosTable({
                   <TableCell>Produto</TableCell>
                   <TableCell>Marca</TableCell>
                   <TableCell align="right">Preço</TableCell>
-                  <TableCell align="right">Clube</TableCell>
-                  <TableCell>Promoção</TableCell>
+                  {mostrarClubePromo && <TableCell align="right">Clube</TableCell>}
+                  {mostrarClubePromo && <TableCell>Promoção</TableCell>}
                   <TableCell align="center">Encarte</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {carregando
-                  ? Array.from({ length: 8 }).map((_, i) => (
-                    <TableRow key={i}>
-                      {Array.from({ length: 7 }).map((_, j) => (
-                        <TableCell key={j}>
-                          <Skeleton height={24} />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+? Array.from({ length: 8 }).map((_, i) => (
+                        <TableRow key={i}>
+                          {Array.from({ length: mostrarClubePromo ? 7 : 5 }).map((_, j) => (
+                            <TableCell key={j}>
+                              <Skeleton height={24} />
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
                   : paginaSlice.map((p, i) => {
                     const temDesconto =
                       p.preco && p.preco_clube && p.preco_clube < p.preco;
@@ -189,34 +202,38 @@ export default function ProdutosTable({
                             {p.preco != null ? brl.format(p.preco) : '—'}
                           </Typography>
                         </TableCell>
-                        <TableCell align="right">
-                          {temDesconto ? (
-                            <Tooltip title={`${desconto}% de desconto`}>
+                        {mostrarClubePromo && (
+                          <TableCell align="right">
+                            {temDesconto ? (
+                              <Tooltip title={`${desconto}% de desconto`}>
+                                <Chip
+                                  size="small"
+                                  color="success"
+                                  label={brl.format(p.preco_clube as number)}
+                                />
+                              </Tooltip>
+                            ) : p.preco_clube != null ? (
+                              brl.format(p.preco_clube)
+                            ) : (
+                              '—'
+                            )}
+                          </TableCell>
+                        )}
+                        {mostrarClubePromo && (
+                          <TableCell>
+                            {p.tipo_promocao ? (
                               <Chip
                                 size="small"
-                                color="success"
-                                label={brl.format(p.preco_clube as number)}
+                                color="secondary"
+                                variant="outlined"
+                                icon={<LocalOfferOutlined sx={{ fontSize: 14 }} />}
+                                label={p.tipo_promocao}
                               />
-                            </Tooltip>
-                          ) : p.preco_clube != null ? (
-                            brl.format(p.preco_clube)
-                          ) : (
-                            '—'
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {p.tipo_promocao ? (
-                            <Chip
-                              size="small"
-                              color="secondary"
-                              variant="outlined"
-                              icon={<LocalOfferOutlined sx={{ fontSize: 14 }} />}
-                              label={p.tipo_promocao}
-                            />
-                          ) : (
-                            '—'
-                          )}
-                        </TableCell>
+                            ) : (
+                              '—'
+                            )}
+                          </TableCell>
+                        )}
                         <TableCell
                           align="center"
                           onClick={(e) => e.stopPropagation()}

@@ -125,8 +125,8 @@ export default function Home() {
             </Grid>
           </Grid>
 
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, lg: 7 }}>
+          {/* <Grid container spacing={2}>
+            <Grid > */}
               <ChartPrecoLinha
                 produtoSelecionado={produtoSelecionado}
                 onSelecionarProduto={setProdutoSelecionado}
@@ -137,8 +137,8 @@ export default function Home() {
                 escuro={escuro}
                 slug="preco-produto"
               />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 5 }}>
+            {/* </Grid> */}
+            {/* <Grid size={{ xs: 12, lg: 5 }}>
               <ChartPrecoAnual
                 nomeProduto={produtoSelecionado}
                 historico={historico}
@@ -148,8 +148,8 @@ export default function Home() {
                 escuro={escuro}
                 slug="preco-anual"
               />
-            </Grid>
-          </Grid>
+            </Grid> */}
+          {/* </Grid> */}
 
           <FiltrosBar
             opcoes={filtros}
