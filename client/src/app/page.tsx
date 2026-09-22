@@ -15,8 +15,8 @@ import TabelaVariacao from '@/components/TabelaVariacao';
 import PainelProduto from '@/components/PainelProduto';
 import ChartPrecoLinha from '@/components/charts/ChartPrecoLinha';
 import ChartPrecoAnual from '@/components/charts/ChartPrecoAnual';
-import ChartCestaBasica from '@/components/charts/ChartCestaBasica';
-import ChartIndiceCesta from '@/components/charts/ChartIndiceCesta';
+import ChartVariacaoCesta from '@/components/charts/ChartVariacaoCesta';
+import ChartVariacaoGrupos from '@/components/charts/ChartVariacaoGrupos';
 import ChartHeatmapCategoria from '@/components/charts/ChartHeatmapCategoria';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useHistoricoProduto } from '@/hooks/useHistoricoProduto';
@@ -119,6 +119,23 @@ export default function Home() {
         />
 
           <Grid container spacing={2}>
+            <Grid size={{ xs: 12 }}>
+              <ChartVariacaoCesta
+                itens={produtosGrafico}
+                escuro={escuro}
+                carregando={carregandoCesta}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <ChartVariacaoGrupos
+                produtos={produtosGrafico}
+                escuro={escuro}
+                carregando={carregandoCesta}
+              />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={2}>
             <Grid size={{ xs: 12, lg: 7 }}>
               <ChartPrecoLinha
                 produtoSelecionado={produtoSelecionado}
@@ -138,23 +155,6 @@ export default function Home() {
                 produtosCesta={produtosGrafico}
                 modoSelecao={graficosSelecionados.length > 0}
                 escuro={escuro}
-              />
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, lg: 5 }}>
-              <ChartIndiceCesta
-                produtos={produtosGrafico}
-                escuro={escuro}
-                carregando={carregandoCesta}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 7 }}>
-              <ChartCestaBasica
-                itens={produtosGrafico}
-                escuro={escuro}
-                carregando={carregandoCesta}
               />
             </Grid>
           </Grid>

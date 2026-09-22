@@ -12,11 +12,27 @@ interface EChartProps {
   option: EChartsOption;
   height: number;
   loading?: boolean;
+  /** callback no clique em um elemento do gráfico (ex.: barra) */
+  onClick?: (params: { dataIndex?: number; name?: string; value?: number | number[] }) => void;
 }
 
-export default function EChart({ option, height, loading = false }: EChartProps) {
+export default function EChart({ option, height, loading = false, onClick }: EChartProps) {
   if (loading) {
     return <Skeleton variant="rounded" height={height} />;
   }
-  return <ReactECharts option={option} style={{ height }} notMerge />;
+  return (
+    <ReactECharts
+      option={option}
+      style={{ height }}
+      notMerge
+      onEvents={
+        onClick
+          ? {
+              click: (p: { dataIndex?: number; name?: string; value?: number | number[] }) =>
+                onClick(p),
+            }
+          : undefined
+      }
+    />
+  );
 }
