@@ -9,9 +9,14 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
 import RestartAlt from '@mui/icons-material/RestartAlt';
+import Deselect from '@mui/icons-material/Deselect';
+import SelectAll from '@mui/icons-material/SelectAll';
 import EChart from '@/components/charts/EChart';
 import InfoTitulo from '@/components/InfoTitulo';
+import { filtrarFuzzy } from '@/lib/fuzzy';
 import { brl, chartCores } from '@/lib/utils';
 import {
   serieProduto,
@@ -55,11 +60,12 @@ export default function ChartPrecoLinha({
   const [sugestoes, setSugestoes] = useState<Sugerido[]>([]);
   const [porUnidade, setPorUnidade] = useState(false);
   const [granularidade, setGranularidade] = useState<Granularidade>('mes');
+  const [linhasOcultas, setLinhasOcultas] = useState<string[]>([]);
 
   const modoCesta = produtoSelecionado == null;
 
   useEffect(() => {
-    fetch('/api/produtos?action=produtos-populares')
+    fetch('/api/produtos?action=produtos-contagem')
       .then((r) => r.json())
       .then(setSugestoes)
       .catch(() => setSugestoes([]));
@@ -251,6 +257,24 @@ export default function ChartPrecoLinha({
     };
   }, [modoCesta, gruposCesta, linhasSelecao, pontos, porUnidade, podeNormalizar, unidade, escuro, granularidade]);
 
+  const nomesSeries = useMemo(() => {
+    const series = (option as { series?: { name?: string }[] } | null)?.series ?? [];
+    return series.map((s) => s.name).filter((n): n is string => Boolean(n));
+  }, [option]);
+
+  const todasOcultas = nomesSeries.length > 0 && nomesSeries.every((n) => linhasOcultas.includes(n));
+
+  const optionFinal = useMemo(() => {
+    if (!option || !nomesSeries.length) return option;
+    const selected: Record<string, boolean> = {};
+    for (const nome of nomesSeries) selected[nome] = !linhasOcultas.includes(nome);
+    const base = option as unknown as Record<string, unknown>;
+    return {
+      ...base,
+      legend: { ...(base.legend as Record<string, unknown> | undefined), selected },
+    } as unknown as typeof option;
+  }, [option, nomesSeries, linhasOcultas]);
+
   const resumo = useMemo(() => {
     if (!modoCesta) {
       if (!pontos.length) return null;
@@ -312,6 +336,9 @@ export default function ChartPrecoLinha({
             getOptionLabel={(o) => o.produto}
             value={opcoes.find((s) => s.produto === produtoSelecionado) ?? null}
             onChange={(_, v) => onSelecionarProduto(v?.produto ?? null)}
+            filterOptions={(options, { inputValue }) =>
+              filtrarFuzzy(options, inputValue, (o) => o.produto, 30)
+            }
             renderInput={(params) => (
               <TextField {...params} placeholder="Buscar produto…" variant="outlined" />
             )}
@@ -340,6 +367,20 @@ export default function ChartPrecoLinha({
           >
             Reset
           </Button>
+          <Tooltip title={todasOcultas ? 'Selecionar todas as linhas' : 'Desmarcar todas as linhas'}>
+            <span>
+              <ToggleButton
+                size="small"
+                value="linhas"
+                selected={todasOcultas}
+                disabled={!nomesSeries.length}
+                onChange={() => setLinhasOcultas(todasOcultas ? [] : [...nomesSeries])}
+                aria-label={todasOcultas ? 'Selecionar todas as linhas' : 'Desmarcar todas as linhas'}
+              >
+                {todasOcultas ? <SelectAll fontSize="small" /> : <Deselect fontSize="small" />}
+              </ToggleButton>
+            </span>
+          </Tooltip>
         </Stack>
       </Stack>
 
@@ -367,7 +408,14 @@ export default function ChartPrecoLinha({
               </>
             )}
           </Stack>
-          <EChart option={option} height={360} loading={false} />
+          <EChart
+            option={optionFinal}
+            height={360}
+            loading={false}
+            onLegendSelectChanged={(selected) =>
+              setLinhasOcultas(nomesSeries.filter((n) => selected[n] === false))
+            }
+          />
         </>
       ) : (
         <Typography color="text.secondary" variant="body2" sx={{ py: 10, textAlign: 'center' }}>

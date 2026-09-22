@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { alpha } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
@@ -14,6 +14,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
@@ -52,13 +53,25 @@ export default function ProdutosTable({
   const [porPagina, setPorPagina] = useState(10);
   const [produtosAnteriores, setProdutosAnteriores] = useState(produtos);
   const [mostrarClubePromo, setMostrarClubePromo] = useState(false);
+  const [ordemPreco, setOrdemPreco] = useState<'asc' | 'desc' | null>(null);
 
   if (produtos !== produtosAnteriores) {
     setProdutosAnteriores(produtos);
     setPagina(0);
   }
 
-  const paginaSlice = produtos.slice(pagina * porPagina, pagina * porPagina + porPagina);
+  const ordenados = useMemo(() => {
+    if (!ordemPreco) return produtos;
+    const dir = ordemPreco === 'asc' ? 1 : -1;
+    return [...produtos].sort((a, b) => {
+      if (a.preco == null && b.preco == null) return 0;
+      if (a.preco == null) return 1;
+      if (b.preco == null) return -1;
+      return (a.preco - b.preco) * dir;
+    });
+  }, [produtos, ordemPreco]);
+
+  const paginaSlice = ordenados.slice(pagina * porPagina, pagina * porPagina + porPagina);
 
   return (
     <Paper variant="outlined">
@@ -123,7 +136,19 @@ export default function ProdutosTable({
                   <TableCell padding="checkbox" />
                   <TableCell>Produto</TableCell>
                   <TableCell>Marca</TableCell>
-                  <TableCell align="right">Preço</TableCell>
+                  <TableCell align="right" sortDirection={ordemPreco ?? false}>
+                    <TableSortLabel
+                      active={ordemPreco != null}
+                      direction={ordemPreco ?? 'asc'}
+                      onClick={() => {
+                        setOrdemPreco((o) => (o === 'asc' ? 'desc' : o === 'desc' ? null : 'asc'));
+                        setPagina(0);
+                      }}
+                      sx={{ justifyContent: 'flex-end' }}
+                    >
+                      Preço
+                    </TableSortLabel>
+                  </TableCell>
                   {mostrarClubePromo && <TableCell align="right">Clube</TableCell>}
                   {mostrarClubePromo && <TableCell>Promoção</TableCell>}
                   <TableCell align="center">Encarte</TableCell>

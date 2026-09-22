@@ -14,25 +14,40 @@ interface EChartProps {
   loading?: boolean;
   /** callback no clique em um elemento do gráfico (ex.: barra) */
   onClick?: (params: { dataIndex?: number; name?: string; value?: number | number[] }) => void;
+  /** callback quando o usuário mostra/oculta itens pela legenda */
+  onLegendSelectChanged?: (selected: Record<string, boolean>) => void;
 }
 
-export default function EChart({ option, height, loading = false, onClick }: EChartProps) {
+export default function EChart({
+  option,
+  height,
+  loading = false,
+  onClick,
+  onLegendSelectChanged,
+}: EChartProps) {
   if (loading) {
     return <Skeleton variant="rounded" height={height} />;
   }
+  const events = {
+    ...(onClick
+      ? {
+          click: (p: { dataIndex?: number; name?: string; value?: number | number[] }) =>
+            onClick(p),
+        }
+      : {}),
+    ...(onLegendSelectChanged
+      ? {
+          legendselectchanged: (p: { selected: Record<string, boolean> }) =>
+            onLegendSelectChanged(p.selected),
+        }
+      : {}),
+  };
   return (
     <ReactECharts
       option={option}
       style={{ height }}
       notMerge
-      onEvents={
-        onClick
-          ? {
-              click: (p: { dataIndex?: number; name?: string; value?: number | number[] }) =>
-                onClick(p),
-            }
-          : undefined
-      }
+      onEvents={Object.keys(events).length ? events : undefined}
     />
   );
 }

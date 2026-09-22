@@ -5,4 +5,5 @@ export const GRAFICOS = [
   { slug: 'preco-produto', rotulo: 'Evolução de preço' },
   { slug: 'preco-anual', rotulo: 'Comparação anual' },
   { slug: 'heatmap-categorias', rotulo: 'Categorias' },
+  { slug: 'encartes', rotulo: 'Encartes' },
 ] as const;

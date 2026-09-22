@@ -85,6 +85,8 @@ export function useProdutos() {
       prev.includes(nome) ? prev.filter((n) => n !== nome) : [...prev, nome]
     );
 
+  const limparGraficosSelecionados = () => setGraficosSelecionados([]);
+
   const limparFiltros = () => {
     setFiltroProduto([]);
     setFiltroAnos([]);
@@ -109,6 +111,7 @@ export function useProdutos() {
     setFiltroProduto,
     graficosSelecionados,
     alternarGraficoSelecionado,
+    limparGraficosSelecionados,
     produtosSelecionados,
     filtroAnos,
     setFiltroAnos,

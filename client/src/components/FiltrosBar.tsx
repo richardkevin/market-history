@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Search from '@mui/icons-material/Search';
 import RestartAlt from '@mui/icons-material/RestartAlt';
+import { filtrarFuzzy } from '@/lib/fuzzy';
 import type { Filtros } from '@/lib/types';
 
 interface FiltrosBarProps {
@@ -50,10 +51,13 @@ export default function FiltrosBar({
           sx={{ flex: '2 1 260px' }}
           multiple
           freeSolo
-          limitTags={2}
+          limitTags={-1}
           options={opcoes.produtos}
           value={filtroProduto}
           onChange={(_, v) => onChangeProduto(v)}
+          filterOptions={(options, { inputValue }) =>
+            filtrarFuzzy(options, inputValue, (o) => o, 20)
+          }
           renderInput={(params) => (
             <TextField
               {...params}
@@ -65,9 +69,12 @@ export default function FiltrosBar({
                 input: {
                   ...params.slotProps.input,
                   startAdornment: (
-                    <InputAdornment position="start">
-                      <Search fontSize="small" />
-                    </InputAdornment>
+                    <>
+                      <InputAdornment position="start">
+                        <Search fontSize="small" />
+                      </InputAdornment>
+                      {params.slotProps.input.startAdornment}
+                    </>
                   ),
                 },
               }}

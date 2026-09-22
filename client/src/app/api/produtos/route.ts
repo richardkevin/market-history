@@ -7,7 +7,10 @@ import {
   buscarMarcas,
   buscarCategorias,
   buscarHistoricoProdutoExato,
+  buscarHistoricoPreco,
   produtosMaisRegistrados,
+  produtosComContagem,
+  buscarEncartes,
 } from '@/lib/db';
 
 function parseListaNumeros(valor: string | null): number[] | undefined {
@@ -44,10 +47,17 @@ export async function GET(request: NextRequest) {
         if (!produto) {
           return NextResponse.json({ error: 'produto é obrigatório' }, { status: 400 });
         }
-        return NextResponse.json(buscarHistoricoProdutoExato(produto));
+        const exato = searchParams.get('exato') !== '0';
+        return NextResponse.json(
+          exato ? buscarHistoricoProdutoExato(produto) : buscarHistoricoPreco(produto)
+        );
       }
       case 'produtos-populares':
         return NextResponse.json(produtosMaisRegistrados());
+      case 'produtos-contagem':
+        return NextResponse.json(produtosComContagem());
+      case 'encartes':
+        return NextResponse.json(buscarEncartes());
       case 'produtos':
       default:
         return NextResponse.json(

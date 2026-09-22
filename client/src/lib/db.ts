@@ -101,6 +101,42 @@ export function buscarMarcas(): string[] {
   return rows.map(r => r.marca);
 }
 
+export interface EncarteResumo {
+  arquivo: string;
+  supermercado: string;
+  n_produtos: number;
+  data_inicio: string | null;
+  data_fim: string | null;
+}
+
+/** Encartes disponíveis (por arquivo/imagem), agrupados por supermercado. */
+export function buscarEncartes(): EncarteResumo[] {
+  const db = getDb();
+  const rows = db.prepare(
+    `SELECT
+       CASE WHEN instr(lower(imagem), '.pdf:') > 0
+            THEN substr(imagem, 1, instr(lower(imagem), '.pdf:') + 4)
+            ELSE imagem END AS arquivo,
+       supermercado,
+       COUNT(*) AS n_produtos,
+       MIN(data_encarte) AS data_inicio,
+       MAX(data_encarte) AS data_fim
+     FROM produtos
+     WHERE erro_identificacao = 0
+       AND imagem IS NOT NULL AND imagem != ''
+       AND imagem NOT LIKE 'http://%' AND imagem NOT LIKE 'https://%'
+     GROUP BY supermercado, arquivo
+     ORDER BY supermercado, data_fim DESC, arquivo`
+  ).all() as Array<{
+    arquivo: string;
+    supermercado: string;
+    n_produtos: number;
+    data_inicio: string | null;
+    data_fim: string | null;
+  }>;
+  return rows;
+}
+
 export function buscarCategorias(): string[] {
   const db = getDb();
   const rows = db.prepare('SELECT DISTINCT categoria FROM produtos WHERE categoria IS NOT NULL ORDER BY categoria').all() as { categoria: string }[];
@@ -135,4 +171,14 @@ export function produtosMaisRegistrados(limite = 30): SugeridoComContagem[] {
      GROUP BY produto HAVING COUNT(DISTINCT data_encarte) >= 2
      ORDER BY registros DESC LIMIT ?`
   ).all(limite) as SugeridoComContagem[];
+}
+
+/** Todos os produtos com contagem de registros — base para busca do gráfico. */
+export function produtosComContagem(): SugeridoComContagem[] {
+  const db = getDb();
+  return db.prepare(
+    `SELECT produto, COUNT(*) AS registros FROM produtos
+     WHERE produto IS NOT NULL AND erro_identificacao = 0
+     GROUP BY produto ORDER BY registros DESC, produto`
+  ).all() as SugeridoComContagem[];
 }

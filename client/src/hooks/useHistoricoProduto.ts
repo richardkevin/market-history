@@ -6,20 +6,28 @@ import type { Produto } from '@/lib/types';
 /**
  * Histórico completo (todas as linhas do banco) do produto selecionado,
  * com cache por nome para não refazer o fetch ao voltar num produto já visto.
+ * Com `exato: false`, agrega todos os produtos que contêm o termo (LIKE).
  */
-export function useHistoricoProduto(produtoSelecionado: string | null) {
+export function useHistoricoProduto(
+  produtoSelecionado: string | null,
+  opcoes?: { exato?: boolean }
+) {
+  const exato = opcoes?.exato ?? true;
   const [cache, setCache] = useState<Record<string, Produto[]>>({});
+  const chave = produtoSelecionado ? `${exato ? 'e' : 't'}:${produtoSelecionado}` : null;
 
   useEffect(() => {
-    if (!produtoSelecionado || cache[produtoSelecionado]) return;
+    if (!chave || !produtoSelecionado || cache[chave]) return;
     let vigente = true;
-    fetch(`/api/produtos?action=historico-produto&produto=${encodeURIComponent(produtoSelecionado)}`)
+    fetch(
+      `/api/produtos?action=historico-produto&exato=${exato ? 1 : 0}&produto=${encodeURIComponent(produtoSelecionado)}`
+    )
       .then((r) => r.json())
       .then((data) => {
         if (vigente) {
           setCache((prev) => ({
             ...prev,
-            [produtoSelecionado]: Array.isArray(data) ? data : [],
+            [chave]: Array.isArray(data) ? data : [],
           }));
         }
       })
@@ -27,10 +35,10 @@ export function useHistoricoProduto(produtoSelecionado: string | null) {
     return () => {
       vigente = false;
     };
-  }, [produtoSelecionado, cache]);
+  }, [chave, produtoSelecionado, exato, cache]);
 
-  const historico = produtoSelecionado ? (cache[produtoSelecionado] ?? []) : [];
-  const carregando = produtoSelecionado != null && cache[produtoSelecionado] == null;
+  const historico = chave ? (cache[chave] ?? []) : [];
+  const carregando = chave != null && cache[chave] == null;
 
   return { historico, carregando };
 }

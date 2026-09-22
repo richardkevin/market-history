@@ -11,6 +11,7 @@ import FiltrosBar from '@/components/FiltrosBar';
 import KpiCards from '@/components/KpiCards';
 import ProdutosTable from '@/components/ProdutosTable';
 import CardsDestaque from '@/components/CardsDestaque';
+import CardEncartes from '@/components/CardEncartes';
 import TabelaVariacao from '@/components/TabelaVariacao';
 import PainelProduto from '@/components/PainelProduto';
 import MenuGraficos from '@/components/MenuGraficos';
@@ -54,7 +55,7 @@ export default function Home() {
   } = useProdutos();
 
   const { historico, carregando: carregandoHistorico } =
-    useHistoricoProduto(produtoSelecionado);
+    useHistoricoProduto(produtoSelecionado, { exato: false });
 
   // gráficos refletem os produtos marcados na tabela; sem marcação, a cesta completa
   const produtosGrafico = graficosSelecionados.length ? produtosSelecionados : produtosCesta;
@@ -123,8 +124,7 @@ export default function Home() {
                 onSelecionarProduto={setProdutoSelecionado}
                 historico={historico}
                 carregandoHistorico={carregandoHistorico}
-                produtosCesta={produtosGrafico}
-                modoSelecao={graficosSelecionados.length > 0}
+                produtosCesta={produtosCesta}
                 escuro={escuro}
                 slug="preco-produto"
               />
@@ -176,6 +176,9 @@ export default function Home() {
             carregando={carregandoCesta}
             slug="heatmap-categorias"
           />
+
+          <CardEncartes slug="encartes" />
+
         </Stack>
 
       </Container>
