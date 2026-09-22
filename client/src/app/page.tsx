@@ -18,7 +18,6 @@ import CardDieeseCesta from '@/components/CardDieeseCesta';
 import ChartPrecoLinha from '@/components/charts/ChartPrecoLinha';
 import ChartPrecoAnual from '@/components/charts/ChartPrecoAnual';
 import ChartVariacaoCesta from '@/components/charts/ChartVariacaoCesta';
-import ChartVariacaoGrupos from '@/components/charts/ChartVariacaoGrupos';
 import ChartHeatmapCategoria from '@/components/charts/ChartHeatmapCategoria';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useHistoricoProduto } from '@/hooks/useHistoricoProduto';
@@ -113,14 +112,6 @@ export default function Home() {
                 escuro={escuro}
                 carregando={carregandoCesta}
                 slug="dieese-cesta-basica"
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <ChartVariacaoGrupos
-                produtos={produtosGrafico}
-                escuro={escuro}
-                carregando={carregandoCesta}
-                slug="variacao-grupos"
               />
             </Grid>
           </Grid>
